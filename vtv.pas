@@ -1,4 +1,6 @@
 {
+  VTuberVoice
+
   TTS program using the Free Pascal SAPI Library.
 
   https://github.com/VioletBitKitten/VTuberVoice
@@ -17,7 +19,7 @@ uses
   classes, custapp, sapi, sysutils;
 
 type
-  TTTSApp = Class(TCustomApplication)
+  TVTVApp = Class(TCustomApplication)
   private
     LongOptions  : TStringList;
     OutputFile   : TextFile;
@@ -55,7 +57,7 @@ type
 { ----------========== Application Setup ==========----- }
 
 { Perform cleanup. }
-destructor TTTSApp.Destroy;
+destructor TVTVApp.Destroy;
 begin
 FreeAndNil(SpVoice);
 if WriteText then
@@ -67,7 +69,7 @@ inherited;
 end;
 
 { Run the application. }
-procedure TTTSApp.DoRun;
+procedure TVTVApp.DoRun;
 begin
   ProcessOptions;
   if not Terminated then
@@ -78,7 +80,7 @@ begin
 end;
 
 { Print the help text. }
-procedure TTTSApp.Help;
+procedure TVTVApp.Help;
 begin
 WriteLn(Title);
   WriteLn('Usage: ', ExtractFileName(ExeName), ' [OPTION] [TEXT]...');
@@ -93,18 +95,18 @@ WriteLn(Title);
   WriteLn('  -l , --volume=VOLUME      Set the volume text is spoken at. ', SpVoice_volume_valid_values);
   WriteLn('  -o , --outut=OUTPUT       Set the putput text is spoken to by the name or ID number.');
   WriteLn('  -O , --outputs            List the available audio output devices with ID #.');
-  WriteLn('  -p , --priority           Set the priority for speaking. ', SpVoice_priority_valid_values);
+  WriteLn('  -p , --priority=PRIORITY  Set the priority for speaking. ', SpVoice_priority_valid_values);
   WriteLn('  -r , --rate=RATE          Set the rate text is spoken. ', SpVoice_rate_valid_values);
   WriteLn('  -v , --voice=VOICE        Set the voice text is spoken with by the name or ID number.');
   WriteLn('  -V , --voices             List the available voices with ID #.');
   WriteLn('  -w , --write-to-file=FILE Write all text spoken to a text file.');
   WriteLn('  -W , --wav-file=FILE      All text is recorded to a WAV file instead of being spoken.');
   WriteLn;
-  WriteLn('For more information see: https://github.com/VioletBitKitten/SAPI');
+  WriteLn('For more information see: https://github.com/VioletBitKitten/VTuberVoice');
 end;
 
 { Initialize the application. }
-procedure TTTSApp.Initialize;
+procedure TVTVApp.Initialize;
 begin
   SetupOptions;
   SpVoice := TSpVoice.Create;
@@ -116,7 +118,7 @@ end;
 { ----------========== Command Line Options ==========----- }
 
 { Process the command line options. }
-procedure TTTSApp.ProcessOptions;
+procedure TVTVApp.ProcessOptions;
 var
   Text :       String;
   NonOptions : TStringList;
@@ -228,7 +230,7 @@ begin
 end;
 
 { Setup the command line options. }
-procedure TTTSApp.SetupOptions;
+procedure TVTVApp.SetupOptions;
 begin
   ShortOptions := 'af:hl:Oo:p:r:Vv:w:W:';
   LongOptions := TStringList.Create;
@@ -249,7 +251,7 @@ end;
 { ----------========== Helper Methods ==========----- }
 
 { Write a list of audio outputs, along with the output ID #, to STDOUT. }
-procedure TTTSApp.ListOutputs();
+procedure TVTVApp.ListOutputs();
 var
   OutputIndex : Integer;
   Outputs     : TstringList;
@@ -261,7 +263,7 @@ begin
 end;
 
 { Write a list of available voices, along with the Voice ID #, to STDOUT. }
-procedure TTTSApp.ListVoices();
+procedure TVTVApp.ListVoices();
 var
   VoiceIndex : Integer;
   Voices     : TstringList;
@@ -273,7 +275,7 @@ begin
 end;
 
 { Set the Audio Output Device }
-procedure TTTSApp.SetAudioOutput(NewOutput : String);
+procedure TVTVApp.SetAudioOutput(NewOutput : String);
 var
   OutputID : Integer;
 begin
@@ -292,7 +294,7 @@ try
   end;
 end;
 
-procedure TTTSApp.SetPriority(NewPriority : String);
+procedure TVTVApp.SetPriority(NewPriority : String);
 var
   Priority : Integer;
 begin
@@ -313,7 +315,7 @@ begin
   end;
 end;
 
-procedure TTTSApp.SetRate(NewRate : String);
+procedure TVTVApp.SetRate(NewRate : String);
 var
   Rate : Integer;
 begin
@@ -335,7 +337,7 @@ begin
 end;
 
 { Setup the file to write text to. }
-procedure TTTSApp.SetupOutput(FileName : String; AppendFile : Boolean);
+procedure TVTVApp.SetupOutput(FileName : String; AppendFile : Boolean);
 begin
   WriteText := True;
   AssignFile(OutputFile, FileName);
@@ -352,7 +354,7 @@ begin
 end;
 
 { Setup the wav file to record text to. }
-procedure TTTSApp.SetupOutputWav(FileName : String);
+procedure TVTVApp.SetupOutputWav(FileName : String);
 begin
   WriteWav := True;
   SpFileStream := TSpFileStream.Create;
@@ -367,7 +369,7 @@ begin
 end;
 
 { Set the Voice. }
-procedure TTTSApp.SetVoice(NewVoice : String);
+procedure TVTVApp.SetVoice(NewVoice : String);
 var
   VoiceID : Integer;
 begin
@@ -387,7 +389,7 @@ begin
 end;
 
 { Set the Volume. }
-procedure TTTSApp.SetVolume(NewVolume : String);
+procedure TVTVApp.SetVolume(NewVolume : String);
 var
   Volume : Integer;
 begin
@@ -411,7 +413,7 @@ end;
 { ----------========== Speech Methods ==========----- }
 
 { Read text from the user then speak it. }
-procedure TTTSApp.ReadSpeakLoop();
+procedure TVTVApp.ReadSpeakLoop();
 var
   Text : String;
 begin
@@ -432,7 +434,7 @@ begin
 end;
 
 { Speak te contents of a text file. }
-procedure TTTSApp.SpeakFile(FileName : String);
+procedure TVTVApp.SpeakFile(FileName : String);
 var
   FileHandle : TextFile;
   Text :       String;
@@ -457,7 +459,7 @@ begin
 end;
 
 { Speak a list of strings. }
-procedure TTTSApp.SpeakList(List : TStringList);
+procedure TVTVApp.SpeakList(List : TStringList);
 var
   ListIndex : Integer;
 begin
@@ -468,7 +470,7 @@ begin
 end;
 
 { Speak some text. Also writes the text to an output file. }
-procedure TTTSApp.SpeakText(Text : String);
+procedure TVTVApp.SpeakText(Text : String);
 begin
   if WriteText then
   begin
@@ -479,12 +481,12 @@ begin
 end;
 
 Var
-  App : TTTSApp;
+  App : TVTVApp;
 
 begin
-  App := TTTSApp.Create(Nil);
+  App := TVTVApp.Create(Nil);
   App.Initialize;
-  App.Title := 'SAPI TTS Application.';
+  App.Title := 'VTuberVoice TTS Application.';
   App.Run;
   App.Free;
 end.
