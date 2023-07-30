@@ -1,0 +1,8 @@
+*.swp
+Makefile
+fpcmade.*
+units
+sapi.o
+sapi.ppu
+vtv.exe
+vtv.o

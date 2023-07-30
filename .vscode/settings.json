@@ -1,0 +1,14 @@
+{
+    "cSpell.words": [
+        "fpcmake",
+        "SAPI",
+        "SpVoice",
+        "SSFM",
+        "SVSF",
+        "Tstring",
+        "Vocie"
+    ],
+    "files.associations": {
+        "LICENSE": "text" // Stop the markdown plugin from complaining.
+    }
+}

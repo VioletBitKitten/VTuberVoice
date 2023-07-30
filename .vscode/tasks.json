@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Buld VTuberVoice",
+            "type": "shell",
+            "command": ".\\build.bat",
+            "group": "build"
+        },
+        {
+            "label": "Clean VTuberVoice",
+            "type": "shell",
+            "command": ".\\build.bat clean",
+            "group": "build"
+        },
+        {
+            "label": "Test VTuberVoice",
+            "type": "shell",
+            "command": ".\\build.bat test",
+            "group": "test"
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+[package]
+name=VTuberVoice
+version=0.00
+
+[target]
+units=sapi
+programs=vtv
