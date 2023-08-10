@@ -4,6 +4,8 @@
 
   See the file doc/SAPI.md for documentation on this library.
 
+  https://github.com/VioletBitKitten/SAPI
+
   Documentation on SAPI SpVoice:
   https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee125640(v=vs.85)
 
@@ -86,7 +88,7 @@ type
   end;
 
 const
-  { SpeechVoiceSpeakFlags Flags for the SpVoice Speak method. }
+  { SpeechVoiceSpeakFlags - Flags for the SpVoice Speak method. }
   SVSFDefault          = 0;
   SVSFlagsAsync        = 1;
   SVSFPurgeBeforeSpeak = 2;
@@ -94,11 +96,14 @@ const
   SVSFIsXML            = 8;
   SVSFIsNotXML         = 16;
   SVSFPersistXML       = 32;
-  { SpeechVoicePriority flags for the SpVoice Priority property. }
+  { SpeechVoicePriority - Flags for the SpVoice Priority property. }
   SVPNormal = 0;
   SVPAlert  = 1;
   SVPOver   = 2;
-  { SpeechStreamFileMode flags for the SpFileStream  Open method. }
+  { SpeechRunState - The Status.RunningState Enum. }
+  SRSEDone = 1;
+  SRSEIsSpeaking = 2;
+  { SpeechStreamFileMode - Flags for the SpFileStream  Open method. }
   SSFMOpenForRead    = 0;
   SSFMOpenReadWrite  = 1; { Marked as hidden. }
   SSFMCreate         = 2; { Marked as hidden. }
@@ -108,7 +113,7 @@ const
   SpVoice_invalid_audio_output_name = 'Invalid Audio Output device name.';
   SpVoice_invalid_voice_id          = 'Invalid Voice ID.';
   SpVoice_invalid_voice_name        = 'Invalid Voice name.';
-  SpVoice_priority_valid_values     = 'Valid values 0 to 3.';
+  SpVoice_priority_valid_values     = 'Valid values 0 to 2.';
   SpVoice_rate_valid_values         = 'Valid values -10 to 10.';
   Spvoice_volume_valid_values       = 'Valid values 0 to 100.';
 
@@ -152,12 +157,12 @@ begin
   Result := SpVoice.Priority ;
 end;
 
-{ Set the priority text is spoken at. Valid values 0 to 3. }
+{ Set the priority text is spoken at. Valid values 0 to 2. }
 procedure TSpVoice.SetPriority(NewPriority : Integer);
 begin
-  if (ExceptionsEnabled and (NewPriority < 0) or (NewPriority > 3)) then
+  if (ExceptionsEnabled and ((NewPriority < 0) or (NewPriority > 2))) then
     raise EArgumentOutOfRangeException.Create(SpVoice_priority_valid_values);
-  if NewPriority > 3 then NewPriority := 3;
+  if NewPriority > 2 then NewPriority := 2;
   if NewPriority < 0 then NewPriority := 0;
   SpVoice.Priority := NewPriority;
 end;
@@ -171,7 +176,7 @@ end;
 { Set the rate text is spoken. Valid values -10 to 10 }
 procedure TSpVoice.SetRate(NewRate : Integer);
 begin
-  if (ExceptionsEnabled and (NewRate < -10) or (NewRate > 10)) then
+  if (ExceptionsEnabled and ((NewRate < -10) or (NewRate > 10))) then
     raise EArgumentOutOfRangeException.Create(SpVoice_rate_valid_values);
   if NewRate > 10 then NewRate := 10;
   if NewRate < -10 then NewRate := -10;
@@ -218,7 +223,7 @@ end;
 { Set the Volume text is spoken. Valid values 0 to 100}
 procedure TSpVoice.SetVolume(NewVolume : Integer);
 begin
-  if (ExceptionsEnabled and (NewVolume < 0) or (NewVolume > 100)) then
+  if (ExceptionsEnabled and ((NewVolume < 0) or (NewVolume > 100))) then
     raise EArgumentOutOfRangeException.Create(Spvoice_volume_valid_values);
   if NewVolume > 100 then NewVolume := 100;
   if NewVolume < 0 then NewVolume := 0;
