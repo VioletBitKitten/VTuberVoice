@@ -26,6 +26,8 @@ type
     SpVoice      : TSpVoice;
     SpFileStream : TSpFileStream;
     Settings     : TVTVSettings;
+    SettingsFile : String;
+    NonOptions   : TStringList;
     ShortOptions : String;
     WriteText    : Boolean;
     WriteWav     : Boolean;
@@ -39,6 +41,7 @@ type
     procedure LoadSettings;
     { Command Line Options }
     procedure ProcessOptions;
+    procedure ProcessOptionsSettings;
     procedure SetupOptions;
     { Helper Methods }
     procedure ListVoices;
@@ -65,7 +68,7 @@ destructor TVTVApp.Destroy;
 begin
 FreeAndNil(SpVoice);
 
-Settings.SaveSettings;
+//Settings.SaveSettings; // This isn't really necessary right now.
 FreeandNil(Settings);
 
 if WriteText then
@@ -80,8 +83,10 @@ end;
 { Run the application. }
 procedure TVTVApp.DoRun;
 begin
-  LoadSettings;
   ProcessOptions;
+  Settings := TVTVSettings.Create(SettingsFile);
+  LoadSettings;
+  ProcessOptionsSettings;
   if not Terminated then
   begin
     if Diagnostic then
@@ -102,6 +107,7 @@ WriteLn(Title);
   WriteLn;
   WriteLn('Options:');
   WriteLn('  -a , --append             Append text when writing text to a file.');
+  WriteLn('  -c , --config=FILE        Use the specificed file for the configuration.');
   WriteLn('  -D , --diag               Print out diagnostic information.');
   WriteLn('  -f , --speak-file         Speak the contents of a text file.');
   WriteLn('  -h , --help               Prints this help.');
@@ -125,7 +131,6 @@ begin
   SetupOptions;
   SpVoice := TSpVoice.Create;
   SpVoice.ExceptionsEnabled := True;
-  Settings := TVTVSettings.Create();
   WriteText := False;
   WriteWav := False;
   Diagnostic := False;
@@ -135,19 +140,23 @@ procedure TVTVApp.LoadSettings;
 begin
   if Diagnostic then
     Writeln ('Loading settings from the configuration file: ', Settings.FileName);
-  if Settings.Voice <> '' then
-    SetVoice(Settings.Voice);
   if Settings.AudioOutput <> '' then
     SetAudioOutput(Settings.AudioOutput);
+  if Settings.OutputFile <> '' then
+    SetupOutput(Settings.OutputFile, Settings.OutputAppend);
+  SetPriority(IntToStr(Settings.Priority));
+  SetRate(IntToStr(Settings.Rate));
+  if Settings.Voice <> '' then
+    SetVoice(Settings.Voice);
+  SetVolume(IntToStr(Settings.Volume));
 end;
 
 { ----------========== Command Line Options ==========----- }
 
-{ Process the command line options. }
+{ Process the command line options. Handle a few special cases. }
 procedure TVTVApp.ProcessOptions;
 var
-  Text :       String;
-  NonOptions : TStringList;
+  Text : String;
 begin
   { Check the command line options. }
   NonOptions := TStringList.Create;
@@ -189,13 +198,27 @@ begin
     Exit;
   end;
 
-  { Set various settings. }
+  { Settings that affect the program. }
 
-  { List the available Audio Outputs. }
+  { Enable diagnostic mode. }
   if HasOption('D', 'diag') then
   begin
-    PrintDiagData;
+    Diagnostic := True;
   end;
+
+  { Override the configuration file. }
+  if HasOption('c', 'config') then
+  begin
+    SettingsFile := GetOptionValue('c', 'config')
+  end;
+end;
+
+{ Process the command line options that change settings. }
+procedure TVTVApp.ProcessOptionsSettings;
+var
+  Text : String;
+begin
+  { Override the settings file. }
 
   { Set the volume text is spoken at. }
   if HasOption('l', 'volume') then
@@ -264,10 +287,11 @@ end;
 { Setup the command line options. }
 procedure TVTVApp.SetupOptions;
 begin
-  ShortOptions := 'aDf:hl:Oo:p:r:Vv:w:W:';
+  ShortOptions := 'ac:Df:hl:Oo:p:r:Vv:w:W:';
   LongOptions := TStringList.Create;
   LongOptions.Add('help');
   LongOptions.Add('append');
+  LongOptions.Add('config:');
   LongOptions.Add('diag');
   LongOptions.Add('output:');
   LongOptions.Add('outputs');
