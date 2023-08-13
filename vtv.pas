@@ -16,7 +16,7 @@
 program vtv;
 
 uses
-  classes, custapp, sapi, sysutils;
+  classes, custapp, sysutils, sapi, settings;
 
 type
   TVTVApp = Class(TCustomApplication)
@@ -25,21 +25,25 @@ type
     OutputFile   : TextFile;
     SpVoice      : TSpVoice;
     SpFileStream : TSpFileStream;
+    Settings     : TVTVSettings;
     ShortOptions : String;
     WriteText    : Boolean;
     WriteWav     : Boolean;
+    Diagnostic   : Boolean;
   public
     { Application Setup }
     destructor Destroy; override;
     procedure DoRun; override;
     procedure Help;
     procedure Initialize; override;
+    procedure LoadSettings;
     { Command Line Options }
     procedure ProcessOptions;
     procedure SetupOptions;
     { Helper Methods }
     procedure ListVoices;
     procedure ListOutputs;
+    procedure PrintDiagData;
     procedure SetAudioOutput(NewOutput : String);
     procedure SetPriority(NewPriority : String);
     procedure SetRate(NewRate : String);
@@ -60,20 +64,28 @@ type
 destructor TVTVApp.Destroy;
 begin
 FreeAndNil(SpVoice);
+
+Settings.SaveSettings;
+FreeandNil(Settings);
+
 if WriteText then
   CloseFile(OutputFile);
+
 if WriteWav then
   SpFileStream.Close;
-inherited;
 
+inherited;
 end;
 
 { Run the application. }
 procedure TVTVApp.DoRun;
 begin
+  LoadSettings;
   ProcessOptions;
   if not Terminated then
   begin
+    if Diagnostic then
+      PrintDiagData;
     ReadSpeakLoop;
     Terminate;
   end;
@@ -90,6 +102,7 @@ WriteLn(Title);
   WriteLn;
   WriteLn('Options:');
   WriteLn('  -a , --append             Append text when writing text to a file.');
+  WriteLn('  -D , --diag               Print out diagnostic information.');
   WriteLn('  -f , --speak-file         Speak the contents of a text file.');
   WriteLn('  -h , --help               Prints this help.');
   WriteLn('  -l , --volume=VOLUME      Set the volume text is spoken at. ', SpVoice_volume_valid_values);
@@ -102,6 +115,7 @@ WriteLn(Title);
   WriteLn('  -w , --write-to-file=FILE Write all text spoken to a text file.');
   WriteLn('  -W , --wav-file=FILE      All text is recorded to a WAV file instead of being spoken.');
   WriteLn;
+  WriteLn('Configuration file: ', Settings.FileName);
   WriteLn('For more information see: https://github.com/VioletBitKitten/VTuberVoice');
 end;
 
@@ -111,8 +125,20 @@ begin
   SetupOptions;
   SpVoice := TSpVoice.Create;
   SpVoice.ExceptionsEnabled := True;
+  Settings := TVTVSettings.Create();
   WriteText := False;
   WriteWav := False;
+  Diagnostic := False;
+end;
+
+procedure TVTVApp.LoadSettings;
+begin
+  if Diagnostic then
+    Writeln ('Loading settings from the configuration file: ', Settings.FileName);
+  if Settings.Voice <> '' then
+    SetVoice(Settings.Voice);
+  if Settings.AudioOutput <> '' then
+    SetAudioOutput(Settings.AudioOutput);
 end;
 
 { ----------========== Command Line Options ==========----- }
@@ -164,6 +190,12 @@ begin
   end;
 
   { Set various settings. }
+
+  { List the available Audio Outputs. }
+  if HasOption('D', 'diag') then
+  begin
+    PrintDiagData;
+  end;
 
   { Set the volume text is spoken at. }
   if HasOption('l', 'volume') then
@@ -232,10 +264,11 @@ end;
 { Setup the command line options. }
 procedure TVTVApp.SetupOptions;
 begin
-  ShortOptions := 'af:hl:Oo:p:r:Vv:w:W:';
+  ShortOptions := 'aDf:hl:Oo:p:r:Vv:w:W:';
   LongOptions := TStringList.Create;
   LongOptions.Add('help');
   LongOptions.Add('append');
+  LongOptions.Add('diag');
   LongOptions.Add('output:');
   LongOptions.Add('outputs');
   LongOptions.Add('priority:');
@@ -272,6 +305,18 @@ begin
   WriteLn('Available voices:');
   for VoiceIndex := 0 to Voices.Count - 1 do
     WriteLn(VoiceIndex, ' - ', Voices[VoiceIndex]);
+end;
+
+{ Write diagnostic data. }
+procedure TVTVApp.PrintDiagData;
+var
+  Output : Variant;
+  Voice  : Variant;
+begin
+  Output := SpVoice.AudioOutput;
+  Voice := SpVoice.Voice;
+  WriteLn('Output device: ', Output.GetDescription);
+  WriteLn('Voice: ', Voice.GetDescription);
 end;
 
 { Set the Audio Output Device }
