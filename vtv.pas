@@ -19,12 +19,12 @@ uses
   classes, custapp, sysutils, vtvapp, sapi, settings;
 
 Var
-  VTVApp : TVTVApp;
+  App : TVTVApp;
 
 begin
-  VTVApp := TVTVApp.Create(Nil);
-  AVTVApppp.Initialize;
-  VTVApp.Title := 'VTuberVoice TTS Application.';
-  VTVApp.Run;
-  VTVApp.Free;
+  App := TVTVApp.Create(Nil);
+  App.Initialize;
+  App.Title := 'VTuberVoice TTS Application.';
+  App.Run;
+  App.Free;
 end.
