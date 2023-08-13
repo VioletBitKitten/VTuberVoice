@@ -9,6 +9,7 @@ IF -%1-==-- GOTO runbuild
 
 REM Figure out what we were given on the command line.
 :processargs
+    if /i "%1"=="all"   CALL :runall
     if /i "%1"=="build" CALL :runbuild
     if /i "%1"=="clean" CALL :runclean
     if /i "%1"=="test"  CALL :runtests
@@ -18,7 +19,13 @@ REM Figure out what we were given on the command line.
     if /i "%1"=="-h"    CALL :showhelp
     shift
     if not -%1-==-- goto processargs
-GOTO exitscript
+    GOTO exitscript
+
+REM Clean and Build.
+:runall
+    CALL :runclean
+    CALL :runbuild
+    EXIT /b
 
 REM Run the actual build.
 :runbuild
@@ -43,11 +50,12 @@ REM Show some help text.
     ECHO Performs build tasks for VTuberVoice.
     ECHO.
     ECHO Commands:
+    ECHO all   - Build everything from scratch. (Clean then Build)
     ECHO build - Builds the VTuberVoice project. (Default)
     ECHO clean - Runs the make command 'distclean'.
     ECHO help  - Display this help text.
     ECHO test  - Runs the VTuberVoice tests.
-GOTO exitscript
+    GOTO exitscript
 
 REM Run the tests.
 :runtests
