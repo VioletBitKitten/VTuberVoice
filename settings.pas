@@ -78,6 +78,7 @@ type
 
   public
     constructor Create(OverrideFileName : String = '');
+    destructor Destroy;override;
     procedure LoadSettings;
     procedure SaveSettings;
     property FileName     : String  read GetFileName;
@@ -236,6 +237,13 @@ begin
 
   { Load settings from the INI file. }
   LoadSettings;
+end;
+
+destructor TVTVSettings.Destroy;
+begin
+  SaveSettings;
+  FreeAndNil(IniFile);
+  inherited;
 end;
 
 { Load settings from an INI file. }
