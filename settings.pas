@@ -16,11 +16,11 @@ unit settings;
 interface
 
 uses
-  inifiles, sysutils;
+  inifiles, sysutils, classes;
 
 const
   { Header for a new INI file. }
-  VTVDefaultINIHeader : Array[1..21] of String = (
+  VTVDefaultINIHeader : Array[1..29] of String = (
     '; Configuration file for VTuberVoice.',
     '; TTS Software for VTubers who don''t or can''t speak.',
     ';',
@@ -33,6 +33,7 @@ const
     '; This file is automatically updated when quitting VTS.',
     '; Comments will be preserved when updating the file.',
     ';',
+    '[General]',
     '; General settings.',
     '; AudioOutput = Speakers ; Set the audio output device.',
     '; OutputFile = tts_out.txt ; Set the output file spoken text is written to.',
@@ -41,7 +42,14 @@ const
     '; Rate = 0 ; Set the rate text is spoken, -10 to 10. Rarely needed.',
     '; Voice = Microsoft David ; Set the Voice text is spoken in.',
     '; Volume = 100 ; Set the volume text is spoken at.',
-    '[General]'
+    '[Backup]',
+    '; Backup settings.',
+    '; Create = True ; Create backups of this configuration file, True or False.',
+    '; Format = YYYY-MM-DD-hhmmsszz ; Date and time format for the bacup files.',
+    '; When = Load ; When to create backups.',
+    ';   Load = After loading the configuration file.',
+    ';   Update = After updating the configuration file.',
+    '; File = ; Automatically set to the latest backup file.'
   );
 
 type
@@ -51,23 +59,23 @@ type
     IniFile     : TIniFile;
     IniFileName : String;
     { General Settings. }
-    GeneralAudioOutput  : String;
-    GeneralOutputFile   : String;
-    GeneralOutputAppend : Boolean;
-    GeneralPriority     : Integer;
-    GeneralRate         : Integer;
-    GeneralVoice        : String;
-    GeneralVolume       : Integer;
+    FGeneralAudioOutput  : String;
+    FGeneralOutputFile   : String;
+    FGeneralOutputAppend : Boolean;
+    FGeneralPriority     : Integer;
+    FGeneralRate         : Integer;
+    FGeneralVoice        : String;
+    FGeneralVolume       : Integer;
+    { Backup Settings. }
+    FBackupCreate        : Boolean;
+    FBackupFormat        : String;
+    FBackupWhen          : String;
+    FBackupFile          : String;
+    { Private Methods }
+    procedure CreateBackupFile;
     procedure CreateINIFile;
     { Property Methods }
-    function GetFileName            : String;
-    function GetGeneralAudioOutput  : String;
-    function GetGeneralOutputAppend : Boolean;
-    function GetGeneralOutputFile   : String;
-    function GetGeneralPriority     : Integer;
-    function GetGeneralRate         : Integer;
-    function GetGeneralVoice        : String;
-    function GetGeneralVolume       : Integer;
+
     procedure SetGeneralAudioOutput(NewOutput : String);
     procedure SetGeneralOutputAppend(NewAppend : Boolean);
     procedure SetGeneralOutputFile(NewFile : String);
@@ -75,26 +83,80 @@ type
     procedure SetGeneralRate(NewRate : Integer);
     procedure SetGeneralVoice(NewVoice : String);
     procedure SetGeneralVolume(NewVolume : Integer);
-
+    procedure SetBackupCreate(NewCreate : Boolean);
+    procedure SetBackupFormat(NewFormat : String);
+    procedure SetBackupWhen(NewWhen : String);
+    procedure SetBackupFile(NewFile : String);
   public
     constructor Create(OverrideFileName : String = '');
     destructor Destroy;override;
     procedure LoadSettings;
     procedure SaveSettings;
-    property FileName     : String  read GetFileName;
-    property AudioOutput  : String  read GetGeneralAudioOutput  write SetGeneralAudioOutput;
-    property OutputAppend : Boolean read GetGeneralOutputAppend write SetGeneralOutputAppend;
-    property OutputFile   : String  read GetGeneralOutputFile   write SetGeneralOutputFile;
-    property Priority     : Integer read GetGeneralPriority     write SetGeneralPriority;
-    property Rate         : Integer read GetGeneralRate         write SetGeneralRate;
-    property Voice        : String  read GetGeneralVoice        write SetGeneralVoice;
-    property Volume       : Integer read GetGeneralVolume       write SetGeneralVolume;
+    property FileName     : String  read IniFileName;
+    { General Settings }
+    property AudioOutput  : String  read FGeneralAudioOutput  write SetGeneralAudioOutput;
+    property OutputAppend : Boolean read FGeneralOutputAppend write SetGeneralOutputAppend;
+    property OutputFile   : String  read FGeneralOutputFile   write SetGeneralOutputFile;
+    property Priority     : Integer read FGeneralPriority     write SetGeneralPriority;
+    property Rate         : Integer read FGeneralRate         write SetGeneralRate;
+    property Voice        : String  read FGeneralVoice        write SetGeneralVoice;
+    property Volume       : Integer read FGeneralVolume       write SetGeneralVolume;
+    { Backup File Settings }
+    property BackupCreate : Boolean read FBackupCreate        write SetBackupCreate;
+    property BackupFormat : String  read FBackupFormat        write SetBackupFormat;
+    property BackupWhen   : String  read FBackupWhen          write SetBackupWhen;
+    property BackupFile   : String  read FBackupFile          write SetBackupFile;
   end;
 
 implementation
 
 { ----------========== VTVSettings Private Methods ==========---------- }
 
+{ Create a backup of the current INI file. }
+procedure TVTVSettings.CreateBackupFile;
+var
+  BackupPath    : String;
+  BackupName    : String;
+  BackupExt     : String;
+  BackupNumber  : Integer;
+  BackupFileName: String;
+  MemBuffer     : TMemoryStream;
+begin
+  { Set the backup file name. }
+  BackupPath := ExtractFilePath(IniFileName);
+  BackupName := ExtractFileName(IniFileName) + '_' + FormatDateTime(BackupFormat, Now);
+  BackupExt := ExtractFileExt(IniFileName);
+  BackupFileName := BackupPath + BackupName + BackupExt;
+  BackupNumber := 1;
+
+  { Check if the backup file exists already. }
+  if FileExists(BackupFileName) then
+  begin
+    { Add an incrementing number to avoid name clashes. }
+    while FileExists(BackupPath + BackupName + '_' + IntToStr(BackupNumber) + BackupExt) do
+      begin
+        BackupNumber := BackupNumber + 1;
+      end;
+    BackupFileName := BackupPath + BackupName + '_' + IntToStr(BackupNumber) + BackupExt;
+  end;
+
+  { Create the bakcup. }
+  MemBuffer := TMemoryStream.Create;
+  try
+    MemBuffer.LoadFromFile(IniFileName);
+    MemBuffer.SaveToFile(BackupFileName);
+  except
+    on E:Exception do
+      raise Exception.Create('Unable to create the backup file "' + BackupFileName + '". : ' + E.Message);
+  end;
+  MemBuffer.Free;
+
+  { Save the backup file name to the INI file. }
+  FBackupFile := BackupFileName;
+  IniFile.WriteString('Backup', 'File', FBackupFile);
+end;
+
+{ Create a new INI file from the VTVDefaultINIHeader array above. }
 procedure TVTVSettings.CreateINIFile;
 var
   OutputTextFile : TextFile;
@@ -123,72 +185,60 @@ end;
 
 { ----------========== VTVSettings Property Methods ==========---------- }
 
-function TVTVSettings.GetFileName : String;
-begin
-  Result := IniFileName;
-end;
-function TVTVSettings.GetGeneralAudioOutput : String;
-begin
-  Result := GeneralAudioOutput;
-end;
-function TVTVSettings.GetGeneralOutputAppend : Boolean;
-begin
-  Result := GeneralOutputAppend;
-end;
-function TVTVSettings.GetGeneralOutputFile : String;
-begin
-  Result := GeneralOutputFile;
-end;
-function TVTVSettings.GetGeneralPriority : Integer;
-begin
-  Result := GeneralPriority;
-end;
-function TVTVSettings.GetGeneralRate : Integer;
-begin
-  Result := GeneralRate;
-end;
-function TVTVSettings.GetGeneralVoice : String;
-begin
-  Result := GeneralVoice;
-end;
-function TVTVSettings.GetGeneralVolume : Integer;
-begin
-  Result := GeneralVolume
-end;
 procedure TVTVSettings.SetGeneralAudioOutput(NewOutput : String);
 begin
-  GeneralAudioOutput := NewOutput;
-  IniFile.WriteString('General', 'AudioOutput', GeneralAudioOutput);
+  FGeneralAudioOutput := NewOutput;
+  IniFile.WriteString('General', 'AudioOutput', FGeneralAudioOutput);
 end;
 procedure TVTVSettings.SetGeneralOutputAppend(Newappend : Boolean);
 begin
-  GeneralOutputAppend := NewAppend;
-  IniFile.WriteBool('General', 'OutputAppend', GeneralOutputAppend);
+  FGeneralOutputAppend := NewAppend;
+  IniFile.WriteBool('General', 'OutputAppend', FGeneralOutputAppend);
 end;
 procedure TVTVSettings.SetGeneralOutputFile(NewFile : String);
 begin
-  GeneralOutputFile := NewFile;
-  IniFile.WriteString('General', 'OutputFile', GeneralOutputFile);
+  FGeneralOutputFile := NewFile;
+  IniFile.WriteString('General', 'OutputFile', FGeneralOutputFile);
 end;
 procedure TVTVSettings.SetGeneralPriority(NewPriority : Integer);
 begin
-  GeneralPriority := NewPriority;
-  IniFile.WriteInteger('General', 'Priority', GeneralPriority);
+  FGeneralPriority := NewPriority;
+  IniFile.WriteInteger('General', 'Priority', FGeneralPriority);
 end;
 procedure TVTVSettings.SetGeneralRate(NewRate : Integer);
 begin
-  GeneralRate := NewRate;
-  IniFile.WriteInteger('General', 'Rate', GeneralRate);
+  FGeneralRate := NewRate;
+  IniFile.WriteInteger('General', 'Rate', FGeneralRate);
 end;
 procedure TVTVSettings.SetGeneralVoice(NewVoice : String);
 begin
-  GeneralVoice := NewVoice;
-  IniFile.WriteString('General', 'Voice', GeneralVoice);
+  FGeneralVoice := NewVoice;
+  IniFile.WriteString('General', 'Voice', FGeneralVoice);
 end;
 procedure TVTVSettings.SetGeneralVolume(NewVolume : Integer);
 begin
-  GeneralVolume := NewVolume;
-  IniFile.WriteInteger('General', 'Volume', GeneralVolume);
+  FGeneralVolume := NewVolume;
+  IniFile.WriteInteger('General', 'Volume', FGeneralVolume);
+end;
+procedure TVTVSettings.SetBackupCreate(NewCreate : Boolean);
+begin
+  FBackupCreate := NewCreate;
+  IniFile.WriteBool('Backup', 'Create', FBackupCreate);
+end;
+procedure TVTVSettings.SetBackupFormat(NewFormat : String);
+begin
+  FBackupFormat := NewFormat;
+  IniFile.WriteString('Backup', 'Format', FBackupFormat);
+end;
+procedure TVTVSettings.SetBackupWhen(NewWhen : String);
+begin
+  FBackupWhen := NewWhen;
+  IniFile.WriteString('Backup', 'When', FBackupWhen);
+end;
+procedure TVTVSettings.SetBackupFile(NewFile : String);
+begin
+  FBackupFile := NewFile;
+  IniFile.WriteString('Backup', 'File', FBackupFile);
 end;
 
 { ----------========== VTVSettings Public Methods ==========---------- }
@@ -235,8 +285,17 @@ begin
   IniFile := TIniFile.Create(IniFileName);
   IniFile.CacheUpdates := False;
 
+  { Set some options to make the INI files more friendly. }
+  iniFile.Options := iniFile.Options + [ifoWriteStringBoolean];
+  iniFile.BoolTrueStrings := ['True', 'true', 'yes', '1'];
+  iniFile.BoolFalseStrings := ['False', 'false', 'no', '0'];
+
   { Load settings from the INI file. }
   LoadSettings;
+
+  { Create a backup file if enabled. }
+  if FBackupCreate and (FBackupWhen = 'Load') then
+    CreateBackupFile;
 end;
 
 destructor TVTVSettings.Destroy;
@@ -249,26 +308,34 @@ end;
 { Load settings from an INI file. }
 procedure TVTVSettings.LoadSettings;
 begin
-  GeneralAudioOutput := IniFile.ReadString('General', 'AudioOutput', '');
-  GeneralOutputAppend:= IniFile.ReadBool('General', 'OutputAppend', False);
-  GeneralOutputFile  := IniFile.ReadString('General', 'OutputFile', '');
-  GeneralPriority    := IniFile.ReadInteger('General', 'Priority', 0);
-  GeneralRate        := IniFile.ReadInteger('General', 'Rate', 0);
-  GeneralVoice       := IniFile.ReadString('General', 'Voice', '');
-  GeneralVolume      := IniFile.ReadInteger('General', 'Volume', 100);
+  FGeneralAudioOutput   := IniFile.ReadString('General', 'AudioOutput', '');
+  FGeneralOutputAppend  := IniFile.ReadBool('General', 'OutputAppend', False);
+  FGeneralOutputFile    := IniFile.ReadString('General', 'OutputFile', '');
+  FGeneralPriority      := IniFile.ReadInteger('General', 'Priority', 0);
+  FGeneralRate          := IniFile.ReadInteger('General', 'Rate', 0);
+  FGeneralVoice         := IniFile.ReadString('General', 'Voice', '');
+  FGeneralVolume        := IniFile.ReadInteger('General', 'Volume', 100);
+  FBackupCreate         := IniFile.ReadBool('Backup', 'Create', False);
+  FBackupFormat         := IniFile.ReadString('Backup', 'Format', 'YYYY-MM-DD-hhmmsszz');
+  FBackupWhen           := IniFile.ReadString('Backup', 'When', 'Load');
+  FBackupFile           := IniFile.ReadString('Backup', 'File', '');
 end;
 
 { Write settings to an INI file. }
 procedure TVTVSettings.SaveSettings;
 begin
   IniFile.CacheUpdates := True;
-  IniFile.WriteString('General', 'AudioOutput', GeneralAudioOutput);
-  IniFile.WriteBool('General', 'OutputAppend', GeneralOutputAppend);
-  IniFile.WriteString('General', 'OutputFile', GeneralOutputFile);
-  IniFile.WriteInteger('General', 'Priority', GeneralPriority);
-  IniFile.WriteInteger('General', 'Rate', GeneralRate);
-  IniFile.WriteString('General', 'Voice', GeneralVoice);
-  IniFile.WriteInteger('General', 'Volume', GeneralVolume);
+  IniFile.WriteString('General', 'AudioOutput', FGeneralAudioOutput);
+  IniFile.WriteBool('General', 'OutputAppend', FGeneralOutputAppend);
+  IniFile.WriteString('General', 'OutputFile', FGeneralOutputFile);
+  IniFile.WriteInteger('General', 'Priority', FGeneralPriority);
+  IniFile.WriteInteger('General', 'Rate', FGeneralRate);
+  IniFile.WriteString('General', 'Voice', FGeneralVoice);
+  IniFile.WriteInteger('General', 'Volume', FGeneralVolume);
+  IniFile.WriteBool('Backup', 'Create', FBackupCreate);
+  IniFile.WriteString('Backup', 'Format', FBackupFormat);
+  IniFile.WriteString('Backup', 'When', FBackupWhen);
+  IniFile.WriteString('Backup', 'File', FBackupFile);
   IniFile.CacheUpdates := False;
   IniFile.UpdateFile;
 end;
