@@ -178,14 +178,6 @@ begin
 
   { These options will always exit the program immediately. }
 
-  { Display the help text. }
-  if HasOption('h', 'help') then
-  begin
-    Help;
-    Terminate;
-    Exit;
-  end;
-
   { List the available Audio Outputs. }
   if HasOption('O', 'outputs') then
   begin
@@ -222,6 +214,17 @@ procedure TVTVApp.ProcessOptionsSettings;
 var
   Text : String;
 begin
+  {
+    Display the help text. This will exit the program.
+    Must wait until after the settings are loaded so the configuration file can be printed.
+  }
+  if HasOption('h', 'help') then
+  begin
+    Help;
+    Terminate;
+    Exit;
+  end;
+
   { Override the settings file. }
 
   { Set the volume text is spoken at. }
