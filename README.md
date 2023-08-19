@@ -12,6 +12,8 @@ Provides a simple command line TTS interface with customization. Currently only 
 
 This software was created because I do not like to talk, and at times I am unable to speak.
 
+**Please note** Sometimes Windows is odd and will pick an Audio Output that is not the default. If there is no audio when speaking, try setting an Audio Output using the options `-O` to list Audio Outputs and `-o` to set an Audio Output.
+
 ## Building
 
 To build this project use the script `build.bat`.
