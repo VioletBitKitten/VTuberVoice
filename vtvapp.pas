@@ -23,17 +23,17 @@ uses
 type
   TVTVApp = Class(TCustomApplication)
   private
-    LongOptions  : TStringList;
-    OutputFile   : TextFile;
     SpVoice      : TSpVoice;
     SpFileStream : TSpFileStream;
     Settings     : TVTVSettings;
-    SettingsFile : String;
+    LongOptions  : TStringList;
     NonOptions   : TStringList;
     ShortOptions : String;
+    Diagnostic   : Boolean;
+    OutputFile   : TextFile;
+    SettingsFile : String;
     WriteText    : Boolean;
     WriteWav     : Boolean;
-    Diagnostic   : Boolean;
   public
     { Application Setup }
     destructor Destroy; override;
@@ -93,8 +93,6 @@ begin
   ProcessOptionsSettings;
   if not Terminated then
   begin
-    if Diagnostic then
-      PrintDiagData;
     ReadSpeakLoop;
     Terminate;
   end;
@@ -200,6 +198,7 @@ begin
   if HasOption('D', 'diag') then
   begin
     Diagnostic := True;
+    PrintDiagData;
   end;
 
   { Override the configuration file. }
@@ -341,13 +340,14 @@ end;
 { Write diagnostic data. }
 procedure TVTVApp.PrintDiagData;
 var
-  Output : Variant;
-  Voice  : Variant;
+  Temp : Variant;
 begin
-  Output := SpVoice.AudioOutput;
-  Voice := SpVoice.Voice;
-  WriteLn('Output device: ', Output.GetDescription);
-  WriteLn('Voice: ', Voice.GetDescription);
+  WriteLn('Diagnostic Data:');
+  Temp := SpVoice.AudioOutput;
+  WriteLn('Output device: ', Temp.GetDescription);
+  Temp := SpVoice.Voice;
+  WriteLn('Voice: ', Temp.GetDescription);
+  WriteLn('Volume: ', SpVoice.Volume);
 end;
 
 { Set the Audio Output Device }
