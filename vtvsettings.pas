@@ -11,7 +11,7 @@
 { Modern Pascal Directives }
 {$mode objfpc}{$H+}{$J-}
 
-unit settings;
+unit vtvsettings;
 
 interface
 

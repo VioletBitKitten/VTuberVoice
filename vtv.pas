@@ -16,7 +16,7 @@
 program vtv;
 
 uses
-  classes, custapp, sysutils, vtvapp, sapi, settings;
+  custapp, vtvapp;
 
 Var
   App : TVTVApp;

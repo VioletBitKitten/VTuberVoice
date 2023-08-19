@@ -18,7 +18,7 @@ unit vtvapp;
 interface
 
 uses
-  classes, custapp, sysutils, sapi, settings;
+  classes, custapp, sysutils, sapi, vtvsettings;
 
 type
   TVTVApp = Class(TCustomApplication)
