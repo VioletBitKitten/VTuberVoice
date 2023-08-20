@@ -38,7 +38,7 @@ type
   public
     FileList  : TObjectList;
     FilePath  : String;
-    constructor Create(Path : String = '');
+    constructor Create(Path : String = ''; Mask : String = AllFilesMask);
     procedure SortByName(Reverse : Boolean = False);
     procedure SortBySize(Reverse : Boolean = False);
     procedure SortByTime(Reverse : Boolean = False);
@@ -82,7 +82,7 @@ var
   FileDetails : TFileDetails;
   SearchRecord : TSearchRec;
 begin
-  if FindFirst(FilePath + AllFilesMask, 0, SearchRecord) = 0 then
+  if FindFirst(FilePath, 0, SearchRecord) = 0 then
   begin
     repeat
       with SearchRecord do
@@ -101,14 +101,17 @@ end;
 
 { ----------========== FileList Public Methods ==========---------- }
 
-constructor TFileList.Create(Path : String = '');
+constructor TFileList.Create(Path : String = ''; Mask : String = AllFilesMask);
 begin
-  { Make sure the path actually exists. }
-  if (Path <> '') and not DirectoryExists(Path) then
-    raise Exception.Create('Path does not exist: ' + Path);
+  { Setup the path. }
+  if (Path = '') then
+    FilePath := Mask
+  else if not DirectoryExists(Path) then
+    raise Exception.Create('Path does not exist: ' + Path)
+  else
+    FilePath := Path + DirectorySeparator + Mask;
 
   { Create the list of files. }
-  FilePath := Path;
   SortFunction := @CompareFileName;
   FileList := TObjectList.Create;
   GetFiles;
