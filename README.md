@@ -24,17 +24,18 @@ To Manually build this project:
 * Run the command `fpcmake` to create the file `Makefile`.
 * Run the command `make` to build the project.
 
+## Completed
+
+* Implement customization.
+  * INI Files for configuration implemented.
+    * INI file can be in the local directory or in the users configuration directory.
+    * Backups of the configuration file.
+
 ## TODO
 
 * Create Unit tests.
-* Implement customization.
-  * FreePascal has an INI interface.\
-    <https://www.freepascal.org/docs-html/fcl/inifiles/tinifile.html>
-  * The INI file could live with the app or be placed in a config directory.\
-    <https://www.freepascal.org/docs-html/rtl/sysutils/getappconfigdir.html>
-  * Automatically save changes made in-program back to the INI file.
-  * Backup the INI files. On start / change / timer.
-  * Change command line parameters for setting options.
+* Find a way to handle Control-C.
+* For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library.
 * Expand the interactive user interface.
   * Add aliases for frequently spoken phrases.
   * Add support for "speaking" WAV files.
