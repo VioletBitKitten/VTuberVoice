@@ -1,8 +1,8 @@
 *.swp
+*.exe
+*.o
+*.ppu
 Makefile
 fpcmade.*
 units
-sapi.o
-sapi.ppu
-vtv.exe
-vtv.o
+scratch
