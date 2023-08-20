@@ -3,5 +3,5 @@ name=VTuberVoice
 version=0.00
 
 [target]
-units=sapi vtvapp vtvsettings
+units=sapi vtvapp vtvsettings filelist
 programs=vtv
