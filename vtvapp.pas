@@ -44,6 +44,7 @@ type
     { Command Line Options }
     procedure ProcessOptions;
     procedure ProcessOptionsSettings;
+    procedure ProcessOptionsSpeech;
     procedure SetupOptions;
     { Helper Methods }
     procedure ListVoices;
@@ -91,6 +92,9 @@ begin
   Settings := TVTVSettings.Create(SettingsFile);
   LoadSettings;
   ProcessOptionsSettings;
+  if Diagnostic then
+    PrintDiagData;
+  ProcessOptionsSpeech;
   if not Terminated then
   begin
     ReadSpeakLoop;
@@ -155,7 +159,7 @@ end;
 
 { ----------========== Command Line Options ==========----- }
 
-{ Process the command line options. Handle a few special cases. }
+{ Process the command line options that need to be handles first. }
 procedure TVTVApp.ProcessOptions;
 var
   Text : String;
@@ -198,7 +202,6 @@ begin
   if HasOption('D', 'diag') then
   begin
     Diagnostic := True;
-    PrintDiagData;
   end;
 
   { Override the configuration file. }
@@ -223,8 +226,6 @@ begin
     Terminate;
     Exit;
   end;
-
-  { Override the settings file. }
 
   { Set the volume text is spoken at. }
   if HasOption('l', 'volume') then
@@ -270,9 +271,11 @@ begin
   begin
     SetupOutputWav(GetOptionValue('W', 'wav-file'));
   end;
+end;
 
-  { These options must be last since they trigger a speech action. }
-
+{ Process the command line options that trigger a speech actions. }
+procedure TVTVApp.ProcessOptionsSpeech;
+begin
   { Speak the contents of a text file. }
   if HasOption('f', 'speak-file') then
   begin
