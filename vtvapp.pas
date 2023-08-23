@@ -18,22 +18,24 @@ unit vtvapp;
 interface
 
 uses
-  classes, custapp, sysutils, sapi, vtvsettings;
+  classes, custapp, sysutils, sapi, vtvsettings, helptext;
 
 type
   TVTVApp = Class(TCustomApplication)
   private
-    SpVoice      : TSpVoice;
-    SpFileStream : TSpFileStream;
-    Settings     : TVTVSettings;
-    LongOptions  : TStringList;
-    NonOptions   : TStringList;
-    ShortOptions : String;
-    Diagnostic   : Boolean;
-    OutputFile   : TextFile;
-    SettingsFile : String;
-    WriteText    : Boolean;
-    WriteWav     : Boolean;
+    Diagnostic      : Boolean;
+    LongOptions     : TStringList;
+    NonOptions      : TStringList;
+    OutputAppend    : Boolean;
+    OutputFile      : TextFile;
+    OutputFileName  : String;
+    Settings        : TVTVSettings;
+    SettingsFile    : String;
+    ShortOptions    : String;
+    SpFileStream    : TSpFileStream;
+    SpVoice         : TSpVoice;
+    WriteText       : Boolean;
+    WriteWav        : Boolean;
   public
     { Application Setup }
     destructor Destroy; override;
@@ -58,10 +60,13 @@ type
     procedure SetVoice(NewVoice : String);
     Procedure SetVolume(NewVolume : String);
     { Speech Methods }
-    procedure ReadSpeakLoop;
     procedure SpeakFile(FileName : String);
     procedure SpeakList(List : TStringList);
     procedure SpeakText(Text : String);
+    { Interactive Read-Speak Loop }
+    procedure HandleCommand(UserInput : String);
+    procedure ReadSpeakLoop;
+    { Handle commands }
   end;
 
 implementation
@@ -89,9 +94,11 @@ end;
 procedure TVTVApp.DoRun;
 begin
   ProcessOptions;
+  if Terminated then Exit;
   Settings := TVTVSettings.Create(SettingsFile);
   LoadSettings;
   ProcessOptionsSettings;
+  if Terminated then Exit;
   if Diagnostic then
     PrintDiagData;
   ProcessOptionsSpeech;
@@ -127,7 +134,8 @@ WriteLn(Title);
   WriteLn('  -w , --write-to-file=FILE Write all text spoken to a text file.');
   WriteLn('  -W , --wav-file=FILE      All text is recorded to a WAV file instead of being spoken.');
   WriteLn;
-  WriteLn('Configuration file: ', Settings.FileName);
+  if SettingsFile <> '' then
+    WriteLn('Configuration file: ', Settings.FileName);
   WriteLn('For more information see: https://github.com/VioletBitKitten/VTuberVoice');
 end;
 
@@ -137,9 +145,11 @@ begin
   SetupOptions;
   SpVoice := TSpVoice.Create;
   SpVoice.ExceptionsEnabled := True;
+  Diagnostic := False;
+  SettingsFile := '';
+  OutputFileName := '';
   WriteText := False;
   WriteWav := False;
-  Diagnostic := False;
 end;
 
 procedure TVTVApp.LoadSettings;
@@ -166,7 +176,7 @@ var
 begin
   { Check the command line options. }
   NonOptions := TStringList.Create;
-  Text := CheckOptions(ShortOptions, LongOptions, Nil, NonOptions);
+  Text := CheckOptions(ShortOptions, LongOptions, Nil, NonOptions, True);
 
   { Check for errors with the command line options. }
   if Length(Text) > 0 then
@@ -287,6 +297,8 @@ begin
   { If there are any non-Options speak them. }
   if (NonOptions.Count > 0) and not Terminated then
   begin
+    if Diagnostic then
+      WriteLn('Speaking text from command line.');
     SpeakList(NonOptions);
     Terminate;
     Exit
@@ -345,12 +357,22 @@ procedure TVTVApp.PrintDiagData;
 var
   Temp : Variant;
 begin
+  WriteLn;
   WriteLn('Diagnostic Data:');
   Temp := SpVoice.AudioOutput;
   WriteLn('Output device: ', Temp.GetDescription);
   Temp := SpVoice.Voice;
   WriteLn('Voice: ', Temp.GetDescription);
   WriteLn('Volume: ', SpVoice.Volume);
+  if WriteText then
+  begin
+    if OutputAppend then
+      Write('Appending')
+    else
+      Write('Writing');
+    WriteLn(' to the file: ', OutputFileName);
+  end;
+  Writeln;
 end;
 
 { Set the Audio Output Device }
@@ -373,6 +395,7 @@ try
   end;
 end;
 
+{ Set the speech priority. }
 procedure TVTVApp.SetPriority(NewPriority : String);
 var
   Priority : Integer;
@@ -394,6 +417,7 @@ begin
   end;
 end;
 
+{ Set the speech rate. }
 procedure TVTVApp.SetRate(NewRate : String);
 var
   Rate : Integer;
@@ -426,6 +450,8 @@ begin
       append(OutputFile)
     else
       rewrite(OutputFile);
+    OutputFileName := FileName;
+    OutputAppend := AppendFile;
   except
     on E: EInOutError do
       writeln('Unable to o open the file "', FileName, '" for writing. ', E.Message);
@@ -491,27 +517,6 @@ end;
 
 { ----------========== Speech Methods ==========----- }
 
-{ Read text from the user then speak it. }
-procedure TVTVApp.ReadSpeakLoop();
-var
-  Text : String;
-begin
-  WriteLn('Text entered will be spoken.');
-  WriteLn('Enter a blank line to exit.');
-  if WriteText then
-    Writeln('Enter "\" to speak an empty string and write a blank line.');
-  while True do
-  begin
-    Write('> ');
-    ReadLn(Text);
-    if Length(Text) = 0 then
-      Break;
-    if Text = '\' then
-      Text := '';
-    SpeakText(Text);
-  end;
-end;
-
 { Speak te contents of a text file. }
 procedure TVTVApp.SpeakFile(FileName : String);
 var
@@ -557,5 +562,65 @@ begin
   end;
   SpVoice.Speak(Text);
 end;
+
+{ ----------========== Interactive Read-Speak Loop ==========----- }
+
+{ Handle commands from the user. }
+procedure TVTVApp.HandleCommand(UserInput : String);
+var
+  Command     : String;
+  Text        : String;
+  Args        : TStringArray;
+  TempIndex   : Integer;
+begin
+  { Split the user input into the command and a list of arguments. }
+  TempIndex := UserInput.IndexOf(' ');
+  if (TempIndex > 0) then
+  begin
+    { Split the user input. }
+    Command := UserInput.substring(1, TempIndex - 1);
+    Text := UserInput.substring(TempIndex + 1);
+    // TODO: Do some real parsing here instead of just a split on spaces.
+    Args := Text.Split(' ');
+  end
+  else
+    { Use the whole string, minus the command character. }
+    Command := UserInput.substring(1);
+
+  { Do something with the command. }
+  case (LowerCase(Command)) of
+    'diag'  : PrintDiagData;
+    'help'  : CommandHelp(Args);
+  else
+    WriteLn('Unknown command "', Command, '". Type /help for a list of commands.');
+  end
+end;
+
+{ Read text from the user then speak it. }
+procedure TVTVApp.ReadSpeakLoop();
+var
+  Text : String;
+begin
+  WriteLn('Text entered will be spoken.');
+  WriteLn('Enter a blank line to exit.');
+  WRiteLn('Type "/help" for help');
+  if WriteText then
+    Writeln('Enter "\" to write a blank line to the output file.');
+  while True do
+  begin
+    Write('> ');
+    ReadLn(Text);
+    if Length(Text) = 0 then
+      Break;
+    if Text = '\' then
+      Text := '';
+    if Text[1] = '/' then
+      HandleCommand(Text)
+    else
+      SpeakText(Text);
+  end;
+end;
+
+{ ----------========== Handle commands ==========----- }
 
 end.
