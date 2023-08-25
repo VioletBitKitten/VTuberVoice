@@ -18,18 +18,26 @@ uses
   sysutils;
 
 const
-  HelpTextMain : Array[1..4] of String = (
+  HelpTextMain : Array[1..11] of String = (
     'Commands:',
-    '/diag            Print diagnostic data.',
-    '/help [command]  Print this help text or detailed help for a command.',
-    '/quit            Exit the application.'
+    '/d | /diag             Print out diagnostic information.',
+    '/h | /help [command]   Print this help text or detailed help for a command.',
+    '/o | /output           Show or set the Audio Output Device.',
+    '/O | /outputs          List the available audio output devices with ID #.',
+    '/p | /priority         Show or set the priority for speaking.',
+    '/q | /quit             Exit the application.',
+    '/r | /rate [Rate]      Show or set the rate text is spoken.',
+    '/v | /voice [Voice]    Show or set the voice used to speak text.',
+    '/V | /voices           List the available voices with ID #. ',
+    '/l | /volume [Volume]  Show or set the volume text is spoken at.'
   );
 
 procedure CommandHelp;
-procedure CommandHelp(Args : TStringArray);
+procedure CommandHelp(Arg : String);
 
 implementation
 
+{ Print the main help text. }
 procedure CommandHelp;
 var
   OutputString   : String;
@@ -38,11 +46,12 @@ begin
     WriteLn(OUtputString);
 end;
 
-procedure CommandHelp(Args : TStringArray);
+{ Print help for a command, or the main help text. }
+procedure CommandHelp(Arg : String);
 var
   OutputString   : String;
 begin
-  if Length(Args) = 0 then
+  if Length(Arg) = 0 then
   begin
     for OUtputString in HelpTextMain do
       WriteLn(OUtputString);

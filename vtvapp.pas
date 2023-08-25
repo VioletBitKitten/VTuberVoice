@@ -24,6 +24,7 @@ type
   TVTVApp = Class(TCustomApplication)
   private
     Diagnostic      : Boolean;
+    Interactive     : Boolean;
     LongOptions     : TStringList;
     NonOptions      : TStringList;
     OutputAppend    : Boolean;
@@ -67,6 +68,11 @@ type
     procedure HandleCommand(UserInput : String);
     procedure ReadSpeakLoop;
     { Handle commands }
+    procedure HandleCommandOutput(NewOutput : String);
+    procedure HandleCommandPriority(NewPriority : String);
+    procedure HandleCommandRate(NewRate : String);
+    procedure HandleCommandVoice(NewVoice : String);
+    procedure HandleCommandVolume(NewVolume : String);
   end;
 
 implementation
@@ -78,7 +84,7 @@ destructor TVTVApp.Destroy;
 begin
 FreeAndNil(SpVoice);
 
-//Settings.SaveSettings; // This isn't really necessary right now.
+//Settings.SaveSettings; // TODO: This isn't really necessary right now.
 FreeandNil(Settings);
 
 if WriteText then
@@ -146,6 +152,7 @@ begin
   SpVoice := TSpVoice.Create;
   SpVoice.ExceptionsEnabled := True;
   Diagnostic := False;
+  Interactive := False;
   SettingsFile := '';
   OutputFileName := '';
   WriteText := False;
@@ -389,8 +396,13 @@ try
     on E: EArgumentException do
     begin
       WriteLn(E.Message);
-      WriteLn('Use the -O option to see available audio devices.');
-      Terminate;
+      if Interactive then
+        WriteLn('Use "/outputs" to see available audio devices.')
+      else
+      begin
+        WriteLn('Use the -O option to see available audio devices.');
+        Terminate;
+      end;
     end;
   end;
 end;
@@ -407,13 +419,15 @@ begin
       on E: EArgumentOutOfRangeException do
       begin
         WriteLn('Invalid value for Priority: ', E.Message);
-        Terminate;
+        if not Interactive then
+          Terminate;
       end;
     end
   else
   begin
     Writeln('Invalid Priority "', NewPriority, '". ', SpVoice_priority_valid_values);
-    Terminate;
+    if not Interactive then
+      Terminate;
   end;
 end;
 
@@ -429,13 +443,15 @@ begin
       on E: EArgumentOutOfRangeException do
       begin
         WriteLn('Invalid value for Range: ', E.Message);
-        Terminate;
+        if not Interactive then
+          Terminate;
       end;
     end
   else
   begin
     Writeln('Invalid Rate "', NewRate, '". ', SpVoice_rate_valid_values);
-    Terminate;
+    if not Interactive then
+      Terminate;
   end;
 end;
 
@@ -454,7 +470,11 @@ begin
     OutputAppend := AppendFile;
   except
     on E: EInOutError do
-      writeln('Unable to o open the file "', FileName, '" for writing. ', E.Message);
+      begin
+        writeln('Unable to open the file "', FileName, '" for writing. ', E.Message);
+        if not Interactive then
+          Terminate;
+      end
   end;
 end;
 
@@ -468,7 +488,11 @@ begin
     SpFileStream.OpenStreamWrite(FileName);
   except
     on E: EInOutError do
-      writeln('Unable to o open the wav file "', FileName, '" for writing. ', E.Message);
+    begin
+        writeln('Unable to o open the wav file "', FileName, '" for writing. ', E.Message);
+        if not Interactive then
+          Terminate;
+      end;
   end;
   SpVoice.AudioOutputStream := SpFileStream;
 end;
@@ -487,8 +511,13 @@ begin
     on E: Exception do
     begin
       WriteLn(E.Message);
-      WriteLn('Use the -V option to see available voices.');
-      Terminate;
+      if Interactive then
+        WriteLn('Use "/voices" to see available voices.')
+      else
+      begin
+        WriteLn('Use the -V option to see available voices.');
+        Terminate;
+      end;
     end;
   end;
 end;
@@ -505,13 +534,15 @@ begin
       on E: EArgumentOutOfRangeException do
       begin
         WriteLn('Invalid value for Volume: ', E.Message);
-        Terminate;
+        if not Interactive then
+          Terminate;
       end;
     end
   else
   begin
     Writeln('Invalid Volume "', NewVolume, '". ', SpVoice_volume_valid_values);
-    Terminate;
+    if not Interactive then
+      Terminate;
   end;
 end;
 
@@ -569,8 +600,7 @@ end;
 procedure TVTVApp.HandleCommand(UserInput : String);
 var
   Command     : String;
-  Text        : String;
-  Args        : TStringArray;
+  Arg         : String;
   TempIndex   : Integer;
 begin
   { Split the user input into the command and a list of arguments. }
@@ -579,22 +609,32 @@ begin
   begin
     { Split the user input. }
     Command := UserInput.substring(1, TempIndex - 1);
-    Text := UserInput.substring(TempIndex + 1);
-    // TODO: Do some real parsing here instead of just a split on spaces.
-    Args := Text.Split(' ');
+    Arg := UserInput.substring(TempIndex + 1);
   end
   else
     { Use the whole string, minus the command character. }
     Command := UserInput.substring(1);
 
   { Do something with the command. }
-  case (LowerCase(Command)) of
-    'd', 'diag'  : PrintDiagData;
-    'h', 'help'  : CommandHelp(Args);
-    'q', 'quit'  : Terminate;
-  else
-    WriteLn('Unknown command "', Command, '". Type /help for a list of commands.');
-  end
+  case Command of // Special cases for upper case characters.
+    'V'             : ListVoices;
+    'O'             : ListOutputs;
+    else
+      case (LowerCase(Command)) of
+        'd',  'diag'    : PrintDiagData;
+        'h',  'help'    : CommandHelp(Arg);
+              'outputs' : ListOutputs;
+        'o',  'output'  : HandleCommandOutput(Arg);
+        'p',  'priority': HandleCommandPriority(Arg);
+        'q',  'quit'    : Terminate;
+        'r',  'rate'    : HandleCommandRate(Arg);
+        'v',  'voice'   : HandleCommandVoice(Arg);
+              'voices'  : ListVoices;
+        'l',  'volume'  : HandleCommandVolume(Arg);
+      else
+        WriteLn('Unknown command "', Command, '". Type /help for a list of commands.');
+      end;
+  end;
 end;
 
 { Read text from the user then speak it. }
@@ -602,11 +642,17 @@ procedure TVTVApp.ReadSpeakLoop();
 var
   Text : String;
 begin
+  { Set interactive mode to change some error messages. }
+  Interactive := True;
+
+  { Greet the user. }
   WriteLn('Text entered will be spoken.');
   WriteLn('Type "/help" for help');
   WriteLn('Type /quit to exit.');
   if WriteText then
     Writeln('Enter "\" to write a blank line to the output file.');
+
+  { Read-Speak loop. }
   while True do
   begin
     Write('/help > ');
@@ -633,4 +679,59 @@ end;
 
 { ----------========== Handle commands ==========----- }
 
+procedure TVTVApp.HandleCommandOutput(NewOutput : String);
+var
+  CurrentOutput : Variant;
+begin
+  if Length(NewOutput) = 0 then
+  begin
+    CurrentOutput := SpVoice.AudioOutput;
+    WriteLn('Current Vocie: ', CurrentOutput.GetDescription);
+  end
+  else
+    SetAudioOutput(NewOutput);
+end;
+
+procedure TVTVApp.HandleCommandPriority(NewPriority : String);
+begin
+  if Length(NewPriority) = 0 then
+  begin
+    WriteLn('Current Priority: ', SpVoice.Priority);
+  end
+  else
+    SetPriority(NewPriority);
+end;
+
+procedure TVTVApp.HandleCommandRate(NewRate : String);
+begin
+  if Length(NewRate) = 0 then
+  begin
+    WriteLn('Current Rate: ', SpVoice.Rate);
+  end
+  else
+    SetRate(NewRate);
+end;
+
+procedure TVTVApp.HandleCommandVoice(NewVoice : String);
+var
+  CurrentVoice : Variant;
+begin
+  if Length(NewVoice) = 0 then
+  begin
+    CurrentVoice := SpVoice.Voice;
+    WriteLn('Current Voice: ', CurrentVoice.GetDescription);
+  end
+  else
+    SetVoice(NewVoice);
+end;
+
+procedure TVTVApp.HandleCommandVolume(NewVolume : String);
+begin
+  if Length(NewVolume) = 0 then
+  begin
+    WriteLn('Current Volume: ', SpVoice.Volume);
+  end
+  else
+    SetVolume(NewVolume);
+end;
 end.
