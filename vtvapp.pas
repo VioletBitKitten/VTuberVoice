@@ -642,7 +642,7 @@ procedure TVTVApp.ReadSpeakLoop();
 var
   Text : String;
 begin
-  { Set interactive mode to change some error messages. }
+  { Set interactive mode to change some error messages and prevent terminating the app. }
   Interactive := True;
 
   { Greet the user. }
