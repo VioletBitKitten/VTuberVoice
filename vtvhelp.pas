@@ -1,9 +1,6 @@
 {
   Help text for interactive mode of the VtuberVoice application.
 
-  Much of this was taken from a forum post:
-  https://forum.lazarus.freepascal.org/index.php?topic=29552.0
-
   https://github.com/VioletBitKitten/VTuberVoice
 
   Copyright (c) 2023 Violet Bit Kitten
@@ -13,7 +10,7 @@
 
 { Modern Pascal Directives }
 {$mode objfpc}{$H+}{$J-}
-unit helptext;
+unit vtvhelp;
 
 interface
 
