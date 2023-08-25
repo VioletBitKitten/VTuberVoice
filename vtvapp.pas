@@ -18,7 +18,7 @@ unit vtvapp;
 interface
 
 uses
-  classes, custapp, sysutils, sapi, vtvsettings, helptext;
+  classes, custapp, sysutils, sapi, vtvsettings, vtvhelp;
 
 type
   TVTVApp = Class(TCustomApplication)
@@ -589,8 +589,9 @@ begin
 
   { Do something with the command. }
   case (LowerCase(Command)) of
-    'diag'  : PrintDiagData;
-    'help'  : CommandHelp(Args);
+    'd', 'diag'  : PrintDiagData;
+    'h', 'help'  : CommandHelp(Args);
+    'q', 'quit'  : Terminate;
   else
     WriteLn('Unknown command "', Command, '". Type /help for a list of commands.');
   end
@@ -602,20 +603,29 @@ var
   Text : String;
 begin
   WriteLn('Text entered will be spoken.');
-  WriteLn('Enter a blank line to exit.');
-  WRiteLn('Type "/help" for help');
+  WriteLn('Type "/help" for help');
+  WriteLn('Type /quit to exit.');
   if WriteText then
     Writeln('Enter "\" to write a blank line to the output file.');
   while True do
   begin
-    Write('> ');
+    Write('/help > ');
     ReadLn(Text);
     if Length(Text) = 0 then
-      Break;
-    if Text = '\' then
-      Text := '';
-    if Text[1] = '/' then
-      HandleCommand(Text)
+      Continue
+    else if Text = '\' then
+      Text := ''
+    else if Text = '?' then
+    begin
+      CommandHelp;
+      Continue;
+    end
+    else if Text[1] = '/' then
+    begin
+      HandleCommand(Text);
+      if Terminated then
+        Break;
+    end
     else
       SpeakText(Text);
   end;

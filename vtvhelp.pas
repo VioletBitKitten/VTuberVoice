@@ -18,15 +18,25 @@ uses
   sysutils;
 
 const
-  HelpTextMain : Array[1..3] of String = (
+  HelpTextMain : Array[1..4] of String = (
     'Commands:',
-    '/diag - Print diagnostic data.',
-    '/help [command] - Print this help text or detailed help for a command.'
+    '/diag            Print diagnostic data.',
+    '/help [command]  Print this help text or detailed help for a command.',
+    '/quit            Exit the application.'
   );
 
+procedure CommandHelp;
 procedure CommandHelp(Args : TStringArray);
 
 implementation
+
+procedure CommandHelp;
+var
+  OutputString   : String;
+begin
+  for OUtputString in HelpTextMain do
+    WriteLn(OUtputString);
+end;
 
 procedure CommandHelp(Args : TStringArray);
 var
