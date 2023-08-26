@@ -332,11 +332,19 @@ begin
   { Try an exact name match. }
   OutputID := Outputs.IndexOf(OutputName);
 
-  { Try a partial name match. }
+  { Try a partial name StartsWith match. }
   if OutputID < 0 then
   begin
     for OutputIndex := 0 to Outputs.Count - 1 do
       if Outputs[OutputIndex].StartsWith(OutputName) then
+        OutputID := OutputIndex;
+  end;
+
+{ Try a partial name Contains match. }
+  if OutputID < 0 then
+  begin
+    for OutputIndex := 0 to Outputs.Count - 1 do
+      if Outputs[OutputIndex].Contains(OutputName) then
         OutputID := OutputIndex;
   end;
 
@@ -370,12 +378,19 @@ begin
   { Try an exact name match. }
   VoiceID := Voices.IndexOf(VoiceName);
 
-  { Try a partial name match. }
+  { Try a partial name StartsWith match. }
   if VoiceID < 0 then
   begin
-
     for VoiceIndex := 0 to Voices.Count - 1 do
       if Voices[VoiceIndex].StartsWith(VoiceName) then
+        VoiceID := VoiceIndex;
+  end;
+
+{ Try a partial name Contains match. }
+  if VoiceID < 1 then
+  begin
+    for VoiceIndex := 0 to Voices.Count - 1 do
+      if Voices[VoiceIndex].Contains(VoiceName) then
         VoiceID := VoiceIndex;
   end;
 
