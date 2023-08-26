@@ -95,7 +95,7 @@ type
     procedure SetBackupFile(NewFile : String);
   public
     constructor Create(OverrideFileName : String = '');
-    destructor Destroy;override;
+    destructor Destroy; override;
     procedure LoadSettings;
     procedure SaveSettings;
     property FileName     : String  read IniFileName;
@@ -227,73 +227,61 @@ end;
 
 procedure TVTVSettings.SetGeneralAudioOutput(NewOutput : String);
 begin
-  MaybeBackup;
   FGeneralAudioOutput := NewOutput;
   IniFile.WriteString('General', 'AudioOutput', FGeneralAudioOutput);
 end;
 procedure TVTVSettings.SetGeneralOutputAppend(Newappend : Boolean);
 begin
-  MaybeBackup;
   FGeneralOutputAppend := NewAppend;
   IniFile.WriteBool('General', 'OutputAppend', FGeneralOutputAppend);
 end;
 procedure TVTVSettings.SetGeneralOutputFile(NewFile : String);
 begin
-  MaybeBackup;
   FGeneralOutputFile := NewFile;
   IniFile.WriteString('General', 'OutputFile', FGeneralOutputFile);
 end;
 procedure TVTVSettings.SetGeneralPriority(NewPriority : Integer);
 begin
-  MaybeBackup;
   FGeneralPriority := NewPriority;
   IniFile.WriteInteger('General', 'Priority', FGeneralPriority);
 end;
 procedure TVTVSettings.SetGeneralRate(NewRate : Integer);
 begin
-  MaybeBackup;
   FGeneralRate := NewRate;
   IniFile.WriteInteger('General', 'Rate', FGeneralRate);
 end;
 procedure TVTVSettings.SetGeneralVoice(NewVoice : String);
 begin
-  MaybeBackup;
   FGeneralVoice := NewVoice;
   IniFile.WriteString('General', 'Voice', FGeneralVoice);
 end;
 procedure TVTVSettings.SetGeneralVolume(NewVolume : Integer);
 begin
-  MaybeBackup;
   FGeneralVolume := NewVolume;
   IniFile.WriteInteger('General', 'Volume', FGeneralVolume);
 end;
 procedure TVTVSettings.SetBackupCreate(NewCreate : Boolean);
 begin
-  MaybeBackup;
   FBackupCreate := NewCreate;
   IniFile.WriteBool('Backup', 'Create', FBackupCreate);
 end;
 procedure TVTVSettings.SetBackupFormat(NewFormat : String);
 begin
-  MaybeBackup;
   FBackupFormat := NewFormat;
   IniFile.WriteString('Backup', 'Format', FBackupFormat);
 end;
 procedure TVTVSettings.SetBackupWhen(NewWhen : String);
 begin
-  MaybeBackup;
   FBackupWhen := NewWhen;
   IniFile.WriteString('Backup', 'When', FBackupWhen);
 end;
 procedure TVTVSettings.SetBackupKeep(NewKeep : Integer);
 begin
-  MaybeBackup;
   FBackupKeep := NewKeep;
   IniFile.WriteInteger('Backup', 'Keep', FBackupKeep);
 end;
 procedure TVTVSettings.SetBackupFile(NewFile : String);
 begin
-  MaybeBackup;
   FBackupFile := NewFile;
   IniFile.WriteString('Backup', 'File', FBackupFile);
 end;
@@ -306,10 +294,12 @@ var
   ConfigDir    : String;
   NewFileName  : String;
   CreateResult : Boolean;
+  NewFile      : Boolean;
 begin
   { Set the application configuration directory and INI file name. }
   ConfigDir := GetAppConfigDir(False);
   NewFileName := ApplicationName + '.ini';
+  NewFile := False;
 
   if OverrideFileName <> '' then
     { Override the INI file if the user requests. }
@@ -336,11 +326,14 @@ begin
 
   { If the INI file does not exist yet create a file with some useful comments. }
   if not FileExists(IniFileName) then
+  begin
+    Newfile := True;
     CreateINIFile;
+  end;
 
   { Create the INI Object. Cache objects by default. }
   IniFile := TIniFile.Create(IniFileName);
-  IniFile.CacheUpdates := False;
+  IniFile.CacheUpdates := True;
 
   { Set some options to make the INI files more friendly. }
   iniFile.Options := iniFile.Options + [ifoWriteStringBoolean];
@@ -350,14 +343,23 @@ begin
   { Load settings from the INI file. }
   LoadSettings;
 
+  { If the file is new save the settings to set defaults. }
+  if Newfile then
+    begin
+      NewFile := FBackupCreate;
+      FBackupCreate := False;
+      SaveSettings;
+      FBackupCreate := NewFile
+  end;
+
   { Create a backup file if enabled. }
   if FBackupCreate and (LowerCase(FBackupWhen) = 'load') then
     CreateBackupFile;
+
 end;
 
 destructor TVTVSettings.Destroy;
 begin
-  SaveSettings;
   FreeAndNil(IniFile);
   inherited;
 end;
@@ -382,7 +384,10 @@ end;
 { Write settings to an INI file. }
 procedure TVTVSettings.SaveSettings;
 begin
-  IniFile.CacheUpdates := True;
+  { Create a backup file if requested. }
+  MaybeBackup
+
+  { Save the settings. }
   IniFile.WriteString('General', 'AudioOutput', FGeneralAudioOutput);
   IniFile.WriteBool('General', 'OutputAppend', FGeneralOutputAppend);
   IniFile.WriteString('General', 'OutputFile', FGeneralOutputFile);
@@ -395,7 +400,6 @@ begin
   IniFile.WriteString('Backup', 'When', FBackupWhen);
   IniFile.WriteInteger('Backup', 'Keep', FBackupKeep);
   IniFile.WriteString('Backup', 'File', FBackupFile);
-  IniFile.CacheUpdates := False;
   IniFile.UpdateFile;
 end;
 
