@@ -18,7 +18,7 @@ uses
   sysutils;
 
 const
-  HelpTextMain : Array[1..11] of String = (
+  HelpTextMain : Array[1..14] of String = (
     'Commands:',
     '/d | /diag             Print out diagnostic information.',
     '/h | /help [command]   Print this help text or detailed help for a command.',
@@ -27,9 +27,12 @@ const
     '/p | /priority         Show or set the priority for speaking.',
     '/q | /quit             Exit the application.',
     '/r | /rate [Rate]      Show or set the rate text is spoken.',
+    '/s | /save             Save settings back to the configuration file.',
     '/v | /voice [Voice]    Show or set the voice used to speak text.',
     '/V | /voices           List the available voices with ID #. ',
-    '/l | /volume [Volume]  Show or set the volume text is spoken at.'
+    '/l | /volume [Volume]  Show or set the volume text is spoken at.',
+    '',
+    'End a line with "\" to cancel the input.'
   );
 
 procedure CommandHelp;
