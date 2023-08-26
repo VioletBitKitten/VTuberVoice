@@ -56,11 +56,11 @@ begin
 end;
 function CompareFileSize(A, B: Pointer): Integer;
 begin
-  Result := TFileDetails(A).Size - TFileDetails(B).Size;
+  Result := Integer(TFileDetails(A).Size - TFileDetails(B).Size);
 end;
 function CompareFileTime(A, B: Pointer): Integer;
 begin
-  Result := TFileDetails(A).Time - TFileDetails(B).Time;
+  Result := Integer(TFileDetails(A).Time - TFileDetails(B).Time);
 end;
 function CompareFileNameReverse(A, B: Pointer): Integer;
 begin
@@ -68,11 +68,11 @@ begin
 end;
 function CompareFileSizeReverse(A, B: Pointer): Integer;
 begin
-  Result := TFileDetails(B).Size - TFileDetails(A).Size;
+  Result := Integer(TFileDetails(B).Size - TFileDetails(A).Size);
 end;
 function CompareFileTimeReverse(A, B: Pointer): Integer;
 begin
-  Result := TFileDetails(B).Time - TFileDetails(A).Time;
+  Result := Integer(TFileDetails(B).Time - TFileDetails(A).Time);
 end;
 
 { ----------========== FileList Private Methods ==========---------- }

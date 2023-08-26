@@ -601,7 +601,7 @@ procedure TVTVApp.HandleCommand(UserInput : String);
 var
   Command     : String;
   Arg         : String;
-  TempIndex   : Integer;
+  TempIndex   : SizeInt ;
 begin
   { Split the user input into the command and a list of arguments. }
   TempIndex := UserInput.IndexOf(' ');
