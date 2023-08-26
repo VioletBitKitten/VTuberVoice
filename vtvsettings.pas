@@ -385,7 +385,7 @@ end;
 procedure TVTVSettings.SaveSettings;
 begin
   { Create a backup file if requested. }
-  MaybeBackup
+  MaybeBackup;
 
   { Save the settings. }
   IniFile.WriteString('General', 'AudioOutput', FGeneralAudioOutput);
