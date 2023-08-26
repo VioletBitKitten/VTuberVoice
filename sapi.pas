@@ -19,6 +19,7 @@
 
 { Modern Pascal Directives }
 {$mode objfpc}{$H+}{$J-}
+{$warn 6058 off} // Stop the annoying "marked as inline is not inlined" errors.
 
 unit sapi;
 
