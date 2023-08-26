@@ -50,8 +50,9 @@
                 "-v", // verbose message
                 "-gw", // dwarf debug setting
                 "-godwarfsets", // dwarf mode setting
+                "-Fi${config:SOURCEDIR}", // Include files from the source directory.
                 "-FE${config:OUTPUT_BINARY}", // output for binary
-                "-FU${config:OUTPUT}" // output for units
+                "-FU${config:OUTPUTDIR}" // output for units
             ],
             "presentation": {
                 "focus": true
@@ -60,7 +61,7 @@
                 "owner": "objectpascal",
                 "fileLocation": [
                     "relative",
-                    "${workspaceFolder}"
+                    "${workspaceFolder}${config:SOURCEDIR}"
                 ],
                 "pattern": {
                     // capture FPC's error messages and display them in Problems panel
@@ -90,8 +91,9 @@
                 "-XXs", // executable setting
                 "-B", // rebuild all units
                 "-v", // verbose message
+                "-Fu${config:SOURCEDIR}", // Include files from the source directory.
                 "-FE${config:OUTPUT_BINARY}", // output for binary
-                "-FU${config:OUTPUT}" // output for units
+                "-FU${config:OUTPUTDIR}" // output for units
             ],
             "presentation": {
                 "focus": true
@@ -100,7 +102,7 @@
                 "owner": "objectpascal",
                 "fileLocation": [
                     "relative",
-                    "${workspaceFolder}"
+                    "${workspaceFolder}${config:SOURCEDIR}"
                 ],
                 "pattern": {
                     "kind": "location",
@@ -127,9 +129,10 @@
                 "-Se99", // maximum error found
                 "-B", // rebuild all units
                 "-v", // verbose message
-                // "-s", // syntax check mode
-                "-FE${config:OUTPUT}", // output for binary
-                "-FU${config:OUTPUT}" // output for units
+                "-s", // syntax check mode
+                "-Fu${config:SOURCEDIR}", // Include files from the source directory.
+                "-FE${config:OUTPUTDIR}", // output for binary
+                "-FU${config:OUTPUTDIR}" // output for units
             ],
             "presentation": {
                 "focus": true
@@ -138,7 +141,7 @@
                 "owner": "objectpascal",
                 "fileLocation": [
                     "relative",
-                    "${workspaceFolder}"
+                    "${workspaceFolder}${config:SOURCEDIR}"
                 ],
                 "pattern": {
                     "kind": "location",
@@ -171,13 +174,13 @@
             "type": "shell",
             "command": "mkdir",
             "args": [
-                "${config:OUTPUT}"
+                "${config:OUTPUTDIR}"
             ],
             "windows": {
             "command": "cmd",
                 "args": [
                     "/C",
-                    "if not exist ${config:OUTPUT} mkdir ${config:OUTPUT}"
+                    "if not exist ${config:OUTPUTDIR} mkdir ${config:OUTPUTDIR}"
                 ],
             },
             "presentation": {
@@ -191,8 +194,8 @@
             "command": "rm",
             "args": [
                 "-rf", // remove them all!
-                "${config:OUTPUT}/*.*", // Build files.
-                "${config:OUTPUT}", // Output Directory.
+                "${config:OUTPUTDIR}/*.*", // Build files.
+                "${config:OUTPUTDIR}", // Output Directory.
                 "${config:PROJECTEXECUTABLE}" // Binary file.
             ],
             "presentation": {

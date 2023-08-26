@@ -2,6 +2,9 @@
 name=VTuberVoice
 version=0.00
 
+[compiler]
+targetdir=..
+
 [target]
 units=sapi vtvapp vtvsettings filelist
 programs=vtv
