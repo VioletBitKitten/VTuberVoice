@@ -612,8 +612,11 @@ begin
     Arg := UserInput.substring(TempIndex + 1);
   end
   else
+  begin
     { Use the whole string, minus the command character. }
     Command := UserInput.substring(1);
+    Arg := '';
+  end;
 
   { Do something with the command. }
   case Command of // Special cases for upper case characters.
