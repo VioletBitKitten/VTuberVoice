@@ -37,6 +37,7 @@
                 "kind": "build",
                 "isDefault": true
             },
+            "dependsOn": ["fpc: Create Build Folder"],
             "command": "${config:FPC_COMMAND}",
             "args": [
                 "${config:PROJECTFILE}", // main project file
@@ -78,6 +79,7 @@
             "label": "fpc: Build Release",
             "type": "shell",
             "group": "build",
+            "dependsOn": ["fpc: Create Build Folder"],
             "command": "${config:FPC_COMMAND}",
             "args": [
                 "${config:PROJECTFILE}", // main project file
@@ -116,6 +118,7 @@
             "label": "fpc: Syntax Check",
             "type": "shell",
             "group": "build",
+            "dependsOn": ["fpc: Create Build Folder"],
             "command": "${config:FPC_COMMAND}",
             "args": [
                 "${config:PROJECTFILE}", // main project file
@@ -181,7 +184,8 @@
             "command": "rm",
             "args": [
                 "-rf", // remove them all!
-                "${config:OUTPUT}/*.*", // unit files
+                "${config:OUTPUT}/*.*", // Build files.
+                "${config:OUTPUT}", // Output Directory.
                 "${config:PROJECTEXECUTABLE}" // Binary file.
             ],
             "presentation": {
