@@ -463,7 +463,7 @@ begin
   AssignFile(OutputFile, FileName);
   try
     { Open the file. }
-    if AppendFile then
+    if AppendFile and FileExists(FileName) then
       append(OutputFile)
     else
       rewrite(OutputFile);
@@ -679,9 +679,9 @@ begin
       HandleCommand(Text);
       if Terminated then
         Break;
-    end
-    else
-      SpeakText(Text);
+      Continue;
+    end;
+    SpeakText(Text);
   end;
 end;
 
