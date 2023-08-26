@@ -1,23 +1,193 @@
 {
     "version": "2.0.0",
+    "options": {
+        "cwd": "${workspaceFolder}",
+    },
     "tasks": [
         {
             "label": "Buld VTuberVoice",
             "type": "shell",
             "command": ".\\build.bat",
-            "group": "build"
+            "group": {
+                "kind": "build"
+            }
         },
         {
             "label": "Clean VTuberVoice",
             "type": "shell",
             "command": ".\\build.bat clean",
-            "group": "build"
+            "group": {
+                "kind": "build"
+            }
         },
         {
             "label": "Test VTuberVoice",
             "type": "shell",
             "command": ".\\build.bat test",
-            "group": "test"
+            "group": {
+                "kind": "test"
+            }
+        },
+
+        // The following tasks based on: https://gist.github.com/stepbester/96e6310e7e94cd7c64b54f9efa38489f
+        { // Build debug without any optimization
+            "label": "fpc: Build Debug",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "command": "${config:FPC_COMMAND}",
+            "args": [
+                "${config:PROJECTFILE}", // main project file
+                "${config:PROCESSOR}", // target processor
+                "${config:SYNTAX}", // pascal syntax mode
+                "-CroOti", // generated code setting
+                "-O-", // disable optimization
+                "-g", // debug info
+                "-B", // rebuild all units
+                "-v", // verbose message
+                "-gw", // dwarf debug setting
+                "-godwarfsets", // dwarf mode setting
+                "-FE${config:OUTPUT_BINARY}", // output for binary
+                "-FU${config:OUTPUT}" // output for units
+            ],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "objectpascal",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    // capture FPC's error messages and display them in Problems panel
+                    "kind": "location",
+                    "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                    "loop": true
+                }
+            }
+        },
+        { // Build release with full optimization
+            "label": "fpc: Build Release",
+            "type": "shell",
+            "group": "build",
+            "command": "${config:FPC_COMMAND}",
+            "args": [
+                "${config:PROJECTFILE}", // main project file
+                "${config:PROCESSOR}", // target processor
+                "${config:SYNTAX}", // pascal syntax mode
+                "-CX", // generated code setting
+                "-O3", // code optimization setting
+                "-XXs", // executable setting
+                "-B", // rebuild all units
+                "-v", // verbose message
+                "-FE${config:OUTPUT_BINARY}", // output for binary
+                "-FU${config:OUTPUT}" // output for units
+            ],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "objectpascal",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "kind": "location",
+                    "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                    "loop": true
+                }
+            }
+        },
+        { // Syntax check without linking
+            "label": "fpc: Syntax Check",
+            "type": "shell",
+            "group": "build",
+            "command": "${config:FPC_COMMAND}",
+            "args": [
+                "${config:PROJECTFILE}", // main project file
+                "${config:PROCESSOR}", // target processor
+                "${config:SYNTAX}", // pascal syntax mode
+                "-Se99", // maximum error found
+                "-B", // rebuild all units
+                "-v", // verbose message
+                // "-s", // syntax check mode
+                "-FE${config:OUTPUT}", // output for binary
+                "-FU${config:OUTPUT}" // output for units
+            ],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "objectpascal",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "kind": "location",
+                    "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                    "loop": true
+                }
+            }
+        },
+        { // Execute generated binary
+            "label": "fpc: Execute Binary",
+            "type": "shell",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "command": "${config:PROJECTEXECUTABLE}",
+            "args": [],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        { // Create build folders for compilation
+            "label": "fpc: Create Build Folder",
+            "type": "shell",
+            "command": "mkdir",
+            "args": [
+                "${config:OUTPUT}"
+            ],
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": []
+        },
+        { // Remove compiler genereted files
+            "label": "fpc: Remove Build Files",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "-rf", // remove them all!
+                "${config:OUTPUT}/*.*", // unit files
+                "${config:PROJECTEXECUTABLE}" // Binary file.
+            ],
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": []
         }
     ]
 }

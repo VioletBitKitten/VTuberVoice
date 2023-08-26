@@ -10,5 +10,13 @@
     ],
     "files.associations": {
         "LICENSE": "text" // Stop the markdown plugin from complaining.
-    }
+    },
+    // Settings for the tasks.
+    "FPC_COMMAND": "fpc",
+    "PROJECTFILE": "vtv.pas", // "${relativeFile}",
+    "PROJECTEXECUTABLE": "${workspaceFolder}/vtv.exe",
+    "OUTPUT": "out",
+    "OUTPUT_BINARY": "",
+    "PROCESSOR": "-Px86_64",
+    "SYNTAX": "-Mobjfpc"
 }
