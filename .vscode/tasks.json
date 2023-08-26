@@ -173,6 +173,13 @@
             "args": [
                 "${config:OUTPUT}"
             ],
+            "windows": {
+            "command": "cmd",
+                "args": [
+                    "/C",
+                    "if not exist ${config:OUTPUT} mkdir ${config:OUTPUT}"
+                ],
+            },
             "presentation": {
                 "reveal": "silent"
             },
