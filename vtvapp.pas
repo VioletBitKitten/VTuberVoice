@@ -71,6 +71,7 @@ type
     procedure HandleCommandOutput(NewOutput : String);
     procedure HandleCommandPriority(NewPriority : String);
     procedure HandleCommandRate(NewRate : String);
+    procedure HandleCommandSaveSettings;
     procedure HandleCommandVoice(NewVoice : String);
     procedure HandleCommandVolume(NewVolume : String);
   end;
@@ -84,7 +85,7 @@ destructor TVTVApp.Destroy;
 begin
 FreeAndNil(SpVoice);
 
-//Settings.SaveSettings; // TODO: This isn't really necessary right now.
+Settings.SaveSettings;
 FreeandNil(Settings);
 
 if WriteText then
@@ -631,6 +632,7 @@ begin
         'p',  'priority': HandleCommandPriority(Arg);
         'q',  'quit'    : Terminate;
         'r',  'rate'    : HandleCommandRate(Arg);
+        's',  'save'    : HandleCommandSaveSettings;
         'v',  'voice'   : HandleCommandVoice(Arg);
               'voices'  : ListVoices;
         'l',  'volume'  : HandleCommandVolume(Arg);
@@ -654,6 +656,7 @@ begin
   WriteLn('Type /quit to exit.');
   if WriteText then
     Writeln('Enter "\" to write a blank line to the output file.');
+  WriteLn('End a line with "\" to cancel the input.');
 
   { Read-Speak loop. }
   while True do
@@ -669,6 +672,8 @@ begin
       CommandHelp;
       Continue;
     end
+    else if Text[Length(Text)] = '\' then
+      Continue
     else if Text[1] = '/' then
     begin
       HandleCommand(Text);
@@ -689,10 +694,15 @@ begin
   if Length(NewOutput) = 0 then
   begin
     CurrentOutput := SpVoice.AudioOutput;
-    WriteLn('Current Vocie: ', CurrentOutput.GetDescription);
+    WriteLn('Current Audio Output: ', CurrentOutput.GetDescription);
   end
   else
+  begin
     SetAudioOutput(NewOutput);
+    CurrentOutput := SpVoice.AudioOutput;
+    {$warn 6058 off} // Stop the annoying "marked as inline is not inlined" errors.
+    Settings.AudioOutput := CurrentOutput.GetDescription;
+  end;
 end;
 
 procedure TVTVApp.HandleCommandPriority(NewPriority : String);
@@ -702,7 +712,10 @@ begin
     WriteLn('Current Priority: ', SpVoice.Priority);
   end
   else
+  begin
     SetPriority(NewPriority);
+    Settings.Priority := SpVoice.Priority;
+  end;
 end;
 
 procedure TVTVApp.HandleCommandRate(NewRate : String);
@@ -712,7 +725,16 @@ begin
     WriteLn('Current Rate: ', SpVoice.Rate);
   end
   else
+  begin
     SetRate(NewRate);
+    Settings.Rate := SpVoice.Rate;
+    end;
+end;
+
+procedure TVTVApp.HandleCommandSaveSettings;
+begin
+  WriteLn('Saving settings...');
+  Settings.SaveSettings;
 end;
 
 procedure TVTVApp.HandleCommandVoice(NewVoice : String);
@@ -725,7 +747,12 @@ begin
     WriteLn('Current Voice: ', CurrentVoice.GetDescription);
   end
   else
+  begin
     SetVoice(NewVoice);
+    CurrentVoice := SpVoice.Voice;
+    {$warn 6058 off} // Stop the annoying "marked as inline is not inlined" errors.
+    Settings.Voice := CurrentVoice.GetDescription;
+    end;
 end;
 
 procedure TVTVApp.HandleCommandVolume(NewVolume : String);
@@ -735,6 +762,10 @@ begin
     WriteLn('Current Volume: ', SpVoice.Volume);
   end
   else
+  begin
     SetVolume(NewVolume);
+    Settings.Volume := SpVoice.Volume;
+  end;
 end;
+
 end.
