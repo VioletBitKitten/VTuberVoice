@@ -85,8 +85,11 @@ destructor TVTVApp.Destroy;
 begin
 FreeAndNil(SpVoice);
 
-Settings.SaveSettings;
-FreeandNil(Settings);
+if Settings <> Nil then
+begin
+  Settings.SaveSettings;
+  FreeandNil(Settings);
+end;
 
 if WriteText then
   CloseFile(OutputFile);
@@ -141,7 +144,7 @@ WriteLn(Title);
   WriteLn('  -w , --write-to-file=FILE Write all text spoken to a text file.');
   WriteLn('  -W , --wav-file=FILE      All text is recorded to a WAV file instead of being spoken.');
   WriteLn;
-  if SettingsFile <> '' then
+  if Settings <> Nil then
     WriteLn('Configuration file: ', Settings.FileName);
   WriteLn('For more information see: https://github.com/VioletBitKitten/VTuberVoice');
 end;
