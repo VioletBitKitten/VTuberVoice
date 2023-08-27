@@ -54,6 +54,7 @@ type
     { Helper Methods }
     procedure ListVoices;
     procedure ListOutputs;
+    procedure PrintDiagMessage(Message : String);
     procedure PrintDiagData;
     procedure SetAudioOutput(NewOutput : String);
     procedure SetPriority(NewPriority : String);
@@ -89,19 +90,34 @@ implementation
 { Perform cleanup. }
 destructor TVTVApp.Destroy;
 begin
+PrintDiagMessage('Freeing the Voice object.');
 FreeAndNil(SpVoice);
 
 if Settings <> Nil then
 begin
-  Settings.SaveSettings;
+  PrintDiagMessage('Saving Settings.');
+  try
+    Settings.SaveSettings;
+  except
+    on E: EFCreateError do
+    begin
+      WriteLn('Unable to save settings: ', E.Message);
+    end;
+  end;
   FreeandNil(Settings);
 end;
 
 if WriteText then
+begin
+  PrintDiagMessage('Closing the output file.');
   CloseFile(OutputFile);
+end;
 
 if WriteWav then
+begin
+  PrintDiagMessage('Closing the output wave file.');
   SpFileStream.Close;
+end;
 
 inherited;
 end;
@@ -171,8 +187,8 @@ end;
 
 procedure TVTVApp.LoadSettings;
 begin
-  if Diagnostic then
-    Writeln ('Loading settings from the configuration file: ', Settings.FileName);
+
+  PrintDiagMessage('Loading settings from the configuration file: ' + Settings.FileName);
   if Settings.AudioOutput <> '' then
     SetAudioOutput(Settings.AudioOutput);
   if Settings.OutputFile <> '' then
@@ -316,8 +332,7 @@ begin
   { If there are any non-Options speak them. }
   if (NonOptions.Count > 0) and not Terminated then
   begin
-    if Diagnostic then
-      WriteLn('Speaking text from command line.');
+    PrintDiagMessage('Speaking text from command line.');
     SpeakList(NonOptions);
     Terminate;
     Exit
@@ -369,6 +384,13 @@ begin
   WriteLn('Available voices:');
   for VoiceIndex := 0 to Voices.Count - 1 do
     WriteLn(VoiceIndex, ' - ', Voices[VoiceIndex]);
+end;
+
+{ Print a diagnostic message if Diagnostic is true. }
+procedure TVTVApp.PrintDiagMessage(Message : String);
+begin
+if Diagnostic then
+  WriteLn('Diagnostic: ', Message);
 end;
 
 { Write diagnostic data. }
@@ -629,8 +651,7 @@ begin
   end;
 
   { Speak the updated text. }
-  if Diagnostic then
-    WriteLn('Speaking: ', Text);
+  PrintDiagMessage('Speaking: ', Text);
   SpVoice.Speak(Text);
 end;
 
