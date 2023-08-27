@@ -20,7 +20,7 @@ uses
 
 const
   { Header for a new INI file. }
-  VTVDefaultINIHeader : Array[1..32] of String = (
+  VTVDefaultINIHeader : Array[1..43] of String = (
     '; Configuration file for VTuberVoice.',
     '; TTS Software for VTubers who don''t or can''t speak.',
     ';',
@@ -30,7 +30,7 @@ const
     ';',
     '; Distributed under the MIT license. Please see the file LICENSE.',
     ';',
-    '; This file is automatically updated when quitting VTS.',
+    '; This file is automatically updated when quitting VTV.',
     '; Comments will be preserved when updating the file.',
     ';',
     '[General]',
@@ -52,7 +52,18 @@ const
     '; Keep = 20 ; The number of backup files to keep.',
     ';    The oldest files will be deleted if there are more than the spcified files.',
     ';    Set to 0 to keep all backup files.',
-    '; File = ; Automatically set to the latest backup file.'
+    '; File = ; Automatically set to the latest backup file.',
+    '[Aliases]',
+    '; Aliases are a shorthand for longer text.',
+    '; To use an Alias enter # followed by the alias name.',
+    '; Example alias for vtv.',
+    'vtv=Vtuber Voice, for VTubers who don''t or can''t speak',
+    '[Abbreviations]',
+    '; Abbreviations are replaced anywhere in the text to be spoken.',
+    '; They are intended for replacing words that are not spoken correctly.',
+    '; They are only replaced when speaking text, not when writing to a file.',
+    'vtuber=veetoober',
+    'uwu=OOO WUUU'
   );
 
 type
@@ -93,6 +104,8 @@ type
     procedure SetBackupWhen(NewWhen : String);
     procedure SetBackupKeep(NewKeep : Integer);
     procedure SetBackupFile(NewFile : String);
+    function GetAbbreviationList : TStringList;
+    function GetAliasList : TStringList;
   public
     constructor Create(OverrideFileName : String = '');
     destructor Destroy; override;
@@ -113,6 +126,9 @@ type
     property BackupWhen   : String  read FBackupWhen          write SetBackupWhen;
     property BackupKeep   : Integer read FBackupKeep          write SetBackupKeep;
     property BackupFile   : String  read FBackupFile          write SetBackupFile;
+    { Aliases and Abbreviations }
+    property Aliases      : TStringList read GetAliasList;
+    property Abbreviations: TStringList read GetAbbreviationList;
   end;
 
 implementation
@@ -284,6 +300,22 @@ procedure TVTVSettings.SetBackupFile(NewFile : String);
 begin
   FBackupFile := NewFile;
   IniFile.WriteString('Backup', 'File', FBackupFile);
+end;
+function TVTVSettings.GetAliasList : TStringList;
+var
+  AliasList : TStringList;
+begin
+  AliasList := TStringList.create;
+  IniFile.ReadSectionValues('Aliases', AliasList);
+  Result := AliasList;
+end;
+function TVTVSettings.GetAbbreviationList : TStringList;
+var
+  AbbrevaiationList : TStringList;
+begin
+  AbbrevaiationList := TStringList.create;
+  IniFile.ReadSectionValues('Abbreviations', AbbrevaiationList);
+  Result := AbbrevaiationList;
 end;
 
 { ----------========== VTVSettings Public Methods ==========---------- }

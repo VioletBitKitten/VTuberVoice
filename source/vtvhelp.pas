@@ -18,9 +18,11 @@ uses
   sysutils;
 
 const
-  HelpTextMain : Array[1..14] of String = (
+  HelpTextMain : Array[1..16] of String = (
     'Commands:',
-    '/d | /diag             Print out diagnostic information.',
+    '/A | /abbrev [Abbrev]  Lias all Abbreviations, or a specific Abbreviation',
+    '/a | /alias [Alias]    List all Aliases, or a specific alias.',
+    '/d | /diag [Bool]      Enable/Disable/Print diagnostic information.',
     '/h | /help [command]   Print this help text or detailed help for a command.',
     '/o | /output           Show or set the Audio Output Device.',
     '/O | /outputs          List the available audio output devices with ID #.',

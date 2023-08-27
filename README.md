@@ -40,11 +40,14 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 
 ## TODO
 
-* Create Unit tests. In Progress.
+* Create Unit tests. `In Progress.`
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library.
 * Expand the interactive user interface.
-  * Add aliases for frequently spoken phrases.
+  * Add aliases for frequently spoken phrases. `In Progress.`
+    * Simple alias support. Can make it better.
+    * Add ability to create/delete/edit aliases from VTV.
+    * Added Abbreviation support. Rather inefficient.
   * Add support for "speaking" WAV files.
 * Expand support for writing spoken text to a file.
   * More options for how to write to the file.

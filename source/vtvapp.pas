@@ -23,6 +23,8 @@ uses
 type
   TVTVApp = Class(TCustomApplication)
   private
+    AbbrevList      : TStringList;
+    AliasList       : TStringList;
     Diagnostic      : Boolean;
     Interactive     : Boolean;
     LongOptions     : TStringList;
@@ -61,6 +63,7 @@ type
     procedure SetVoice(NewVoice : String);
     Procedure SetVolume(NewVolume : String);
     { Speech Methods }
+    procedure SpeakAlias(AliasName : String);
     procedure SpeakFile(FileName : String);
     procedure SpeakList(List : TStringList);
     procedure SpeakText(Text : String);
@@ -68,6 +71,9 @@ type
     procedure HandleCommand(UserInput : String);
     procedure ReadSpeakLoop;
     { Handle commands }
+    procedure HandleCommandAbbrev(AbbrevName : String);
+    procedure HandleCommandAlias(AliasName : String);
+    procedure HandleCommandDiag(NewDiag : String);
     procedure HandleCommandOutput(NewOutput : String);
     procedure HandleCommandPriority(NewPriority : String);
     procedure HandleCommandRate(NewRate : String);
@@ -176,6 +182,8 @@ begin
   if Settings.Voice <> '' then
     SetVoice(Settings.Voice);
   SetVolume(IntToStr(Settings.Volume));
+  AliasList := Settings.Aliases;
+  AbbrevList := Settings.Abbreviations;
 end;
 
 { ----------========== Command Line Options ==========----- }
@@ -552,6 +560,18 @@ end;
 
 { ----------========== Speech Methods ==========----- }
 
+{ Speak an alias. }
+procedure TVTVApp.SpeakAlias(AliasName : String);
+var
+  Text : String;
+begin
+  Text := AliasList.Values[AliasName];
+  if Text <> '' then
+    SpeakText(Text)
+  else
+    Writeln('Invalid alias: "', AliasName, '".');
+end;
+
 { Speak te contents of a text file. }
 procedure TVTVApp.SpeakFile(FileName : String);
 var
@@ -589,12 +609,28 @@ end;
 
 { Speak some text. Also writes the text to an output file. }
 procedure TVTVApp.SpeakText(Text : String);
+var
+  AbbrevIndex : Integer;
+  OldWord     : String;
+  NewWord     : String;
 begin
   if WriteText then
   begin
     WriteLn(OutputFile, Text);
     Flush(OutputFile);
   end;
+
+  { Replace abbreviations before speaking. }
+  for AbbrevIndex := 0 to AbbrevList.Count - 1 do
+  begin
+    OldWord := AbbrevList.Names[AbbrevIndex];
+    NewWord := AbbrevList.ValueFromIndex[AbbrevIndex];
+    Text := Text.Replace(OldWord, NewWord,[rfReplaceAll, rfIgnoreCase]);
+  end;
+
+  { Speak the updated text. }
+  if Diagnostic then
+    WriteLn('Speaking: ', Text);
   SpVoice.Speak(Text);
 end;
 
@@ -624,11 +660,14 @@ begin
 
   { Do something with the command. }
   case Command of // Special cases for upper case characters.
+    'A'             : HandleCommandAbbrev(Arg);
     'V'             : ListVoices;
     'O'             : ListOutputs;
     else
       case (LowerCase(Command)) of
-        'd',  'diag'    : PrintDiagData;
+              'abbrev'  : HandleCommandAbbrev(Arg);
+        'a',  'alias'   : HandleCommandAlias(Arg);
+        'd',  'diag'    : HandleCommandDiag(Arg);
         'h',  'help'    : CommandHelp(Arg);
               'outputs' : ListOutputs;
         'o',  'output'  : HandleCommandOutput(Arg);
@@ -677,6 +716,11 @@ begin
     end
     else if Text[Length(Text)] = '\' then
       Continue
+    else if Text[1] = '#' then
+    begin
+      SpeakAlias(Text.Substring(1));
+      Continue;
+    end
     else if Text[1] = '/' then
     begin
       HandleCommand(Text);
@@ -689,6 +733,41 @@ begin
 end;
 
 { ----------========== Handle commands ==========----- }
+
+procedure TVTVApp.HandleCommandAbbrev(AbbrevName : String);
+var
+  AbbrevIndex : Integer;
+begin
+  if AbbrevName <> '' then
+    WriteLn(AbbrevName, ' - ', AbbrevList.Values[AbbrevName])
+  else
+    for AbbrevIndex := 0 to AbbrevList.Count - 1 do
+      WriteLn(AbbrevList.Names[AbbrevIndex], ' - ', AbbrevList.ValueFromIndex[AbbrevIndex]);
+end;
+
+procedure TVTVApp.HandleCommandAlias(AliasName : String);
+var
+  AliasIndex : Integer;
+begin
+  if AliasName <> '' then
+    WriteLn(AliasName, ' - ', AliasList.Values[AliasName])
+  else
+    for AliasIndex := 0 to AliasList.Count - 1 do
+      WriteLn(AliasList.Names[AliasIndex], ' - ', AliasList.ValueFromIndex[AliasIndex]);
+end;
+
+procedure TVTVApp.HandleCommandDiag(NewDiag : String);
+begin
+  if NewDiag <> '' then
+  begin
+    if LowerCase(NewDiag) = 'true' then
+      Diagnostic := True
+    else
+      Diagnostic := False;
+  end
+  else
+    PrintDiagData;
+end;
 
 procedure TVTVApp.HandleCommandOutput(NewOutput : String);
 var
