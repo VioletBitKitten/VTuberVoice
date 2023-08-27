@@ -8,6 +8,11 @@
         "Tstring",
         "Vocie"
     ],
+    "cSpell.ignorePaths": [
+        "source/Makefile.fpc",
+        ".vscode/settings.json",
+        ".vscode/tasks.json"
+    ],
     "files.associations": {
         "LICENSE": "text" // Stop the markdown plugin from complaining.
     },
