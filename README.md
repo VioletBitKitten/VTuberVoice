@@ -41,6 +41,7 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 ## TODO
 
 * Create Unit tests. `In Progress.`
+* Sometimes when quitting VTV there is an exception updating the config file.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library.
 * Expand the interactive user interface.
