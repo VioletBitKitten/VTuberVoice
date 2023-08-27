@@ -69,11 +69,12 @@ REM Show some help text.
 
 REM Run the tests.
 :runtests
-    IF NOT EXIST "rununit.exe" (
-        CALL :runbuild
+    IF EXIST "%SOURCEDIR%Makefile" (
+        CALL :runclean
     )
+    CALL :runbuild
     ECHO Running %APPNAME% Unit tests...
-    rununit
+    runtests
     EXIT /b
 
 REM Exit the script.

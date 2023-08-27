@@ -18,6 +18,11 @@
     "PROCESSOR": "-Px86_64",
     "PROJECTEXECUTABLE": "${workspaceFolder}/vtv.exe",
     "PROJECTFILE": "source/vtv.pas", // "${relativeFile}",
+    "TESTEXECUTABLE": "${workspaceFolder}/runtests.exe",
+    "TESTFILE": "source/runtests.pas", // "${relativeFile}",
     "SOURCEDIR" : "/source",
-    "SYNTAX": "-Mobjfpc"
+    "SYNTAX": "-Mobjfpc",
+    "cSpell.ignoreWords": [
+        "fpmake"
+    ]
 }

@@ -24,20 +24,23 @@ To Manually build this project:
 * Run the command `fpcmake` to create the file `Makefile`.
 * Run the command `make` to build the project.
 
-If you are using [Visual Studio Code](https://code.visualstudio.com/) there are build tasks that can be used.
+If you are using [Visual Studio Code](https://code.visualstudio.com/) there are build tasks that can be used. The `fpc:` tasks will be faster since FPC compiler is being called directly. The `build.bat` tasks will be slower since they use `fpmake` and `make`.
 
-* Buld VTuberVoice - Build VTuberVoice using the `build.bat` file.
-* Clean VTuberVoice - Clean the compiled binaries using the `build.bat` file.
-* fpc: Build Debug - Build VTuberVoice directly with the FPC compiler with debug options.
-* fpc: Build Release - Build VTuberVoice directly with the FPC compiler with release options.
-* fpc: Syntax Check - Build VTuberVoice directly with the FPC compiler but put `vtv.exe` in the `out/` directory just for checking syntax.
-* fpc: Execute Binary - Run the `vtv.exe` program.
-* fpc: Create Build Folder - Create the `out/`` directory for binaries. Called by build commands.
-* fpc: Remove Build Files - Delete the `/out` directory and the `vtv.exe` program.
+* `Build VTuberVoice` - Build VTuberVoice using the `build.bat` file.
+* `Clean VTuberVoice` - Clean the compiled binaries using the `build.bat` file.
+* `Test VTuberVoice` - Build and run the Unit tests using the `build.bat` file.
+* `fpc: Build Debug` - Build VTuberVoice directly with the FPC compiler with debug options.
+* `fpc: Build Release` - Build VTuberVoice directly with the FPC compiler with release options.
+* `fpc: Syntax Check` - Build VTuberVoice directly with the FPC compiler but do not generate `vtv.exe`. Just for checking syntax.
+* `fpc: Build Unit Tests` - Build the VTuberVoice tests directly with the FPC compiler.
+* `fpc: Execute Binary` - Run the `vtv.exe` program.
+* `fpc: Create Build Folder` - Create the `out/`` directory for binaries. Called by build commands.
+* `fpc: Remove Build Files` - Delete the `/out` directory and the `vtv.exe` program.
+* `fpc: Execute Test` - Execute the tests.
 
 ## TODO
 
-* Create Unit tests.
+* Create Unit tests. In Progress.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library.
 * Expand the interactive user interface.

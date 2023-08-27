@@ -2,10 +2,16 @@
     "version": "2.0.0",
     "options": {
         "cwd": "${workspaceFolder}",
+        "shell": {
+            "executable": "cmd.exe",
+            "args": [
+                "/d", "/c"
+            ]
+        }
     },
     "tasks": [
         {
-            "label": "Buld VTuberVoice",
+            "label": "Build VTuberVoice",
             "type": "shell",
             "command": ".\\build.bat",
             "group": {
@@ -155,6 +161,49 @@
                 }
             }
         },
+        { // Build the Unit tests
+            "label": "fpc: Build Unit Tests",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+            },
+            "dependsOn": ["fpc: Create Build Folder"],
+            "command": "${config:FPC_COMMAND}",
+            "args": [
+                "${config:TESTFILE}", // main project file
+                "${config:PROCESSOR}", // target processor
+                "${config:SYNTAX}", // pascal syntax mode
+                "-B", // rebuild all units
+                "-v", // verbose message
+                "-g", // debug info
+                "-gw", // dwarf debug setting
+                "-godwarfsets", // dwarf mode setting
+                "-Fi${config:SOURCEDIR}", // Include files from the source directory.
+                "-FE${config:OUTPUT_BINARY}", // output for binary
+                "-FU${config:OUTPUTDIR}" // output for units
+            ],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "objectpascal",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}${config:SOURCEDIR}"
+                ],
+                "pattern": {
+                    // capture FPC's error messages and display them in Problems panel
+                    "kind": "location",
+                    "regexp": "^(.*)\\((\\d.*),(\\d.*)\\) (Warning|Error|Fatal): (.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                    "loop": true
+                }
+            }
+        },
         { // Execute generated binary
             "label": "fpc: Execute Binary",
             "type": "shell",
@@ -163,6 +212,20 @@
                 "isDefault": true
             },
             "command": "${config:PROJECTEXECUTABLE}",
+            "args": [],
+            "presentation": {
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        { // Execute Unit Test binary
+            "label": "fpc: Execute Unit Tests",
+            "type": "shell",
+            "group": {
+                "kind": "test",
+            },
+            "dependsOn": ["fpc: Build Unit Tests"],
+            "command": "${config:TESTEXECUTABLE}",
             "args": [],
             "presentation": {
                 "focus": true
