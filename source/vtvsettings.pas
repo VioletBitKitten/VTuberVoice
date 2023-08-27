@@ -63,7 +63,7 @@ const
     '; They are intended for replacing words that are not spoken correctly.',
     '; They are only replaced when speaking text, not when writing to a file.',
     'vtuber=veetoober',
-    'uwu=OOO WUUU'
+    'uwu=ooh woo'
   );
 
 type
@@ -339,7 +339,7 @@ begin
   else
     { Look for the INI file. Check the current directory first. }
     if FileExists(NewFileName) then
-      IniFileName := NewFileName
+      IniFileName := ConcatPaths([GetCurrentDir, NewFileName])
     else
     begin
       { Use the Global INI file. }
