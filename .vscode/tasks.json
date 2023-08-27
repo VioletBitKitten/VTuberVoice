@@ -40,8 +40,7 @@
             "label": "fpc: Build Debug",
             "type": "shell",
             "group": {
-                "kind": "build",
-                "isDefault": true
+                "kind": "build"
             },
             "dependsOn": ["fpc: Create Build Folder"],
             "command": "${config:FPC_COMMAND}",
@@ -85,7 +84,10 @@
         { // Build release with full optimization
             "label": "fpc: Build Release",
             "type": "shell",
-            "group": "build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "dependsOn": ["fpc: Create Build Folder"],
             "command": "${config:FPC_COMMAND}",
             "args": [
@@ -125,7 +127,9 @@
         { // Syntax check without linking
             "label": "fpc: Syntax Check",
             "type": "shell",
-            "group": "build",
+            "group": {
+                "kind": "build"
+            },
             "dependsOn": ["fpc: Create Build Folder"],
             "command": "${config:FPC_COMMAND}",
             "args": [
@@ -211,6 +215,7 @@
                 "kind": "test",
                 "isDefault": true
             },
+            "dependsOn": ["fpc: Build Release"],
             "command": "${config:PROJECTEXECUTABLE}",
             "args": [],
             "presentation": {
