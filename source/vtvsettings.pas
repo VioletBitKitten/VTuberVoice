@@ -170,7 +170,8 @@ var
 begin
   { Set the backup file name. }
   BackupPath := ExtractFilePath(IniFileName);
-  BackupName := ApplicationName + '_' + FormatDateTime(BackupFormat, Now);
+  BackupName := ChangeFileExt(ExtractFileName(IniFileName), ''); // Remove the file extension.
+  BackupName := BackupName + '_' + FormatDateTime(BackupFormat, Now);
   BackupExt := ExtractFileExt(IniFileName);
   BackupFileName := BackupPath + BackupName + BackupExt;
   BackupNumber := 1;
