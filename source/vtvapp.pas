@@ -651,7 +651,7 @@ begin
   end;
 
   { Speak the updated text. }
-  PrintDiagMessage('Speaking: ', Text);
+  PrintDiagMessage('Speaking: ' + Text);
   SpVoice.Speak(Text);
 end;
 
