@@ -41,7 +41,9 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 ## TODO
 
 * Create Unit tests. `In Progress.`
-* Sometimes when quitting VTV there is an exception updating the config file.
+  * Tests for the vtvapp class.
+  * Created tests for the filelist Unit.
+  * Created tests for the vtvsettings class. This could use more work.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library.
 * Expand the interactive user interface.
@@ -54,6 +56,8 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
   * More options for how to write to the file.
   * Options to clear the file or write extra lines after a specified time.\
     <https://wiki.freepascal.org/Multithreaded_Application_Tutorial>
+* Option for a default message. Instead of writing a blank line to the output file, write a different message.
+* Convert this to a GUI application? The UI would be much better.
 * Port this to other platforms? A Mac and Linux port is possible, though both platforms have different speech interfaces.
 
 ## Completed
@@ -65,6 +69,8 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 * Expand the interactive user interface.
   * Add a way to cancel the text being typed.
   * Add options for how to exit the application.
+* Sometimes when quitting VTV there is an exception updating the configuration file.
+  * This was caused by the voices changing the directory. Fixed this by always using an absolute path for the configuration file.
 
 ## Reference
 
