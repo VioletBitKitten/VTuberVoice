@@ -28,11 +28,11 @@ type
     procedure TearDown; override;
   published
     { Test FileList Methods }
-    procedure TestFileListCreate;
-    procedure TestFileListSortByName;
-    procedure TestFileListRefreshFiles;
-    procedure TestFileListSortBySize;
-    procedure TestFileListSortByTime;
+    procedure TestCreate;
+    procedure TestSortByName;
+    procedure TestRefreshFiles;
+    procedure TestSortBySize;
+    procedure TestSortByTime;
 
   end;
 
@@ -52,20 +52,20 @@ end;
 
 { ----------========== Test FileList Methods ==========---------- }
 
-procedure TFileListTest.TestFileListCreate;
+procedure TFileListTest.TestCreate;
 begin
   AssertNotNull('File Path should not be null.', FileList.FilePath);
   AssertNotNull('File List should not be null.', FileList.FileList);
 end;
 
-procedure TFileListTest.TestFileListRefreshFiles;
+procedure TFileListTest.TestRefreshFiles;
 begin
-FileList.RefreshFiles;
+  FileList.RefreshFiles;
   AssertNotNull('File Path should not be null.', FileList.FilePath);
   AssertNotNull('File List should not be null.', FileList.FileList);
 end;
 
-procedure TFileListTest.TestFileListSortByName;
+procedure TFileListTest.TestSortByName;
 var
   SortedNormal  : TStringList;
   SortedReverse : TStringList;
@@ -77,7 +77,7 @@ begin
   AssertTrue('Sorted files by name should be different when reversed.', (SortedNormal[0] <> SortedReverse[0]));
 end;
 
-procedure TFileListTest.TestFileListSortBySize;
+procedure TFileListTest.TestSortBySize;
 var
   SortedNormal  : TStringList;
   SortedReverse : TStringList;
@@ -89,7 +89,7 @@ begin
   AssertTrue('Sorted files by size should be different when reversed.', (SortedNormal[0] <> SortedReverse[0]));
 end;
 
-procedure TFileListTest.TestFileListSortByTime;
+procedure TFileListTest.TestSortByTime;
 var
   SortedNormal  : TStringList;
   SortedReverse : TStringList;
@@ -102,7 +102,5 @@ begin
 end;
 
 initialization
-
   RegisterTests([TFileListTest]);
-
 end.
