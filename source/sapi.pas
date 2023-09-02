@@ -26,7 +26,11 @@ unit sapi;
 interface
 
 uses
-  classes, comobj, sysutils;
+  classes, comobj, sysutils
+{$IFNDEF SAPI_NO_AUDIO_DEFAULT}
+  , mmdeviceapi
+{$ENDIF}
+  ;
 
 type
   TSpFileStream = class
@@ -235,6 +239,10 @@ end;
 
 { Create the SpVoice Object. }
 constructor TSpVoice.Create;
+{$IFNDEF SAPI_NO_AUDIO_DEFAULT}
+var
+  DefaultDevice : String;
+{$ENDIF}
 begin
   inherited;
   { Get the Voice OLE Object. }
@@ -242,6 +250,13 @@ begin
 
   { By default do not throw exceptions. }
   ExceptionsEnabled := False;
+
+{$IFNDEF SAPI_NO_AUDIO_DEFAULT}
+  { Try to determine the Default Audio Output Device. }
+  DefaultDevice := String(DefaultOutputDevice);
+  if DefaultDevice <> '' then
+    SetAudioOutputName(DefaultDevice);
+{$ENDIF}
 end;
 
 { Return the available audio outputs. }
