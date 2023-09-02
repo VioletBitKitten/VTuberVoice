@@ -18,54 +18,6 @@ interface
 uses
   inifiles, sysutils, classes, filelist;
 
-const
-  { Header for a new INI file. }
-  VTVDefaultINIHeader : Array[1..43] of String = (
-    '; Configuration file for VTuberVoice.',
-    '; TTS Software for VTubers who don''t or can''t speak.',
-    ';',
-    '; https://github.com/VioletBitKitten/VTuberVoice',
-    ';',
-    '; Copyright (c) 2023 Violet Bit Kitten',
-    ';',
-    '; Distributed under the MIT license. Please see the file LICENSE.',
-    ';',
-    '; This file is automatically updated when quitting VTV.',
-    '; Comments will be preserved when updating the file.',
-    ';',
-    '[General]',
-    '; General settings.',
-    '; AudioOutput = Speakers ; Set the audio output device.',
-    '; OutputFile = tts_out.txt ; Set the output file spoken text is written to.',
-    '; OutputAppend = 1 ; Append text to the output file, 1 for yes, 0 for no.',
-    '; Priority = 0 ; Set the priorty for speech, 0 to 2. Rarely needed.',
-    '; Rate = 0 ; Set the rate text is spoken, -10 to 10. Rarely needed.',
-    '; Voice = Microsoft David ; Set the Voice text is spoken in.',
-    '; Volume = 100 ; Set the volume text is spoken at.',
-    '[Backup]',
-    '; Backup settings.',
-    '; Create = True ; Create backups of this configuration file, True or False.',
-    '; Format = YYYY-MM-DD-hhmmsszz ; Date and time format for the bacup files.',
-    '; When = Load ; When to create backups.',
-    ';   Load = After loading the configuration file.',
-    ';   Update = Before updating the configuration file.',
-    '; Keep = 20 ; The number of backup files to keep.',
-    ';    The oldest files will be deleted if there are more than the spcified files.',
-    ';    Set to 0 to keep all backup files.',
-    '; File = ; Automatically set to the latest backup file.',
-    '[Aliases]',
-    '; Aliases are a shorthand for longer text.',
-    '; To use an Alias enter # followed by the alias name.',
-    '; Example alias for vtv.',
-    'vtv=Vtuber Voice, for VTubers who don''t or can''t speak',
-    '[Abbreviations]',
-    '; Abbreviations are replaced anywhere in the text to be spoken.',
-    '; They are intended for replacing words that are not spoken correctly.',
-    '; They are only replaced when speaking text, not when writing to a file.',
-    'vtuber=veetoober',
-    'uwu=ooh woo'
-  );
-
 type
   TVTVSettings = class
   private
@@ -132,6 +84,67 @@ type
   end;
 
 implementation
+
+const
+  { Default settings. }
+  DefaultGeneralAudioOutput  = '';
+  DefaultGeneralOutputAppend = False;
+  DefaultGeneralOutputFile   = '';
+  DefaultGeneralPriority     = 0;
+  DefaultGeneralRate         = 0;
+  DefaultGeneralVoice        = '';
+  DefaultGeneralVolume       = 100;
+  DefaultBackupCreate        = False;
+  DefaultBackupFormat        = 'YYYY-MM-DD-hhmmsszz';
+  DefaultBackupWhen          = 'Load';
+  DefaultBackupKeep          = 20;
+  DefaultBackupFile          = '';
+  { Header for a new INI file. }
+  VTVDefaultINIHeader : Array[1..43] of String = (
+    '; Configuration file for VTuberVoice.',
+    '; TTS Software for VTubers who don''t or can''t speak.',
+    ';',
+    '; https://github.com/VioletBitKitten/VTuberVoice',
+    ';',
+    '; Copyright (c) 2023 Violet Bit Kitten',
+    ';',
+    '; Distributed under the MIT license. Please see the file LICENSE.',
+    ';',
+    '; This file is automatically updated when quitting VTV.',
+    '; Comments will be preserved when updating the file.',
+    ';',
+    '[General]',
+    '; General settings.',
+    '; AudioOutput = Speakers ; Set the audio output device.',
+    '; OutputFile = tts_out.txt ; Set the output file spoken text is written to.',
+    '; OutputAppend = 1 ; Append text to the output file, 1 for yes, 0 for no.',
+    '; Priority = 0 ; Set the priorty for speech, 0 to 2. Rarely needed.',
+    '; Rate = 0 ; Set the rate text is spoken, -10 to 10. Rarely needed.',
+    '; Voice = Microsoft David ; Set the Voice text is spoken in.',
+    '; Volume = 100 ; Set the volume text is spoken at.',
+    '[Backup]',
+    '; Backup settings.',
+    '; Create = True ; Create backups of this configuration file, True or False.',
+    '; Format = YYYY-MM-DD-hhmmsszz ; Date and time format for the bacup files.',
+    '; When = Load ; When to create backups.',
+    ';   Load = After loading the configuration file.',
+    ';   Update = Before updating the configuration file.',
+    '; Keep = 20 ; The number of backup files to keep.',
+    ';    The oldest files will be deleted if there are more than the spcified files.',
+    ';    Set to 0 to keep all backup files.',
+    '; File = ; Automatically set to the latest backup file.',
+    '[Aliases]',
+    '; Aliases are a shorthand for longer text.',
+    '; To use an Alias enter # followed by the alias name.',
+    '; Example alias for vtv.',
+    'vtv=Vtuber Voice, for VTubers who don''t or can''t speak',
+    '[Abbreviations]',
+    '; Abbreviations are replaced anywhere in the text to be spoken.',
+    '; They are intended for replacing words that are not spoken correctly.',
+    '; They are only replaced when speaking text, not when writing to a file.',
+    'vtuber=veetoober',
+    'uwu=ooh woo'
+  );
 
 { ----------========== VTVSettings Private Methods ==========---------- }
 
@@ -337,25 +350,24 @@ begin
   if OverrideFileName <> '' then
     { Override the INI file if the user requests. }
     IniFileName := OverrideFileName
-  else
+  else if FileExists(NewFileName) then
     { Look for the INI file. Check the current directory first. }
-    if FileExists(NewFileName) then
-      IniFileName := ConcatPaths([GetCurrentDir, NewFileName])
-    else
+    IniFileName := ConcatPaths([GetCurrentDir, NewFileName])
+  else
+  begin
+    { Use the Global INI file. }
+    IniFileName := ConfigDir + NewFileName;
+    if not DirectoryExists(ConfigDir) then
     begin
-      { Use the Global INI file. }
-      IniFileName := ConfigDir + NewFileName;
-      if not DirectoryExists(ConfigDir) then
+      { Attempt to create the application configuration directory. }
+      CreateResult := ForceDirectories(ConfigDir);
+      if not CreateResult then
       begin
-        { Attempt to create the application configuration directory. }
-        CreateResult := ForceDirectories(ConfigDir);
-        if not CreateResult then
-        begin
-          { If the directory can not be created use a local file instead. }
-          IniFileName := NewFileName;
-        end;
+        { If the directory can not be created use a local file instead. }
+        IniFileName := ConcatPaths([GetCurrentDir, NewFileName]);
       end;
     end;
+  end;
 
   { If the INI file does not exist yet create a file with some useful comments. }
   if not FileExists(IniFileName) then
@@ -378,17 +390,16 @@ begin
 
   { If the file is new save the settings to set defaults. }
   if Newfile then
-    begin
-      NewFile := FBackupCreate;
-      FBackupCreate := False;
-      SaveSettings;
-      FBackupCreate := NewFile
+  begin
+    NewFile := FBackupCreate;
+    FBackupCreate := False;
+    SaveSettings;
+    FBackupCreate := NewFile
   end;
 
   { Create a backup file if enabled. }
   if FBackupCreate and (LowerCase(FBackupWhen) = 'load') then
     CreateBackupFile;
-
 end;
 
 destructor TVTVSettings.Destroy;
@@ -400,18 +411,18 @@ end;
 { Load settings from an INI file. }
 procedure TVTVSettings.LoadSettings;
 begin
-  FGeneralAudioOutput   := IniFile.ReadString('General', 'AudioOutput', '');
-  FGeneralOutputAppend  := IniFile.ReadBool('General', 'OutputAppend', False);
-  FGeneralOutputFile    := IniFile.ReadString('General', 'OutputFile', '');
-  FGeneralPriority      := IniFile.ReadInteger('General', 'Priority', 0);
-  FGeneralRate          := IniFile.ReadInteger('General', 'Rate', 0);
-  FGeneralVoice         := IniFile.ReadString('General', 'Voice', '');
-  FGeneralVolume        := IniFile.ReadInteger('General', 'Volume', 100);
-  FBackupCreate         := IniFile.ReadBool('Backup', 'Create', False);
-  FBackupFormat         := IniFile.ReadString('Backup', 'Format', 'YYYY-MM-DD-hhmmsszz');
-  FBackupWhen           := IniFile.ReadString('Backup', 'When', 'Load');
-  FBackupKeep           := IniFile.ReadInteger('Backup', 'Keep', 20);
-  FBackupFile           := IniFile.ReadString('Backup', 'File', '');
+  FGeneralAudioOutput  := IniFile.ReadString ('General', 'AudioOutput',  DefaultGeneralAudioOutput );
+  FGeneralOutputAppend := IniFile.ReadBool   ('General', 'OutputAppend', DefaultGeneralOutputAppend);
+  FGeneralOutputFile   := IniFile.ReadString ('General', 'OutputFile',   DefaultGeneralOutputFile  );
+  FGeneralPriority     := IniFile.ReadInteger('General', 'Priority',     DefaultGeneralPriority    );
+  FGeneralRate         := IniFile.ReadInteger('General', 'Rate',         DefaultGeneralRate        );
+  FGeneralVoice        := IniFile.ReadString ('General', 'Voice',        DefaultGeneralVoice       );
+  FGeneralVolume       := IniFile.ReadInteger('General', 'Volume',       DefaultGeneralVolume      );
+  FBackupCreate        := IniFile.ReadBool   ('Backup',  'Create',       DefaultBackupCreate       );
+  FBackupFormat        := IniFile.ReadString ('Backup',  'Format',       DefaultBackupFormat       );
+  FBackupWhen          := IniFile.ReadString ('Backup',  'When',         DefaultBackupWhen         );
+  FBackupKeep          := IniFile.ReadInteger('Backup',  'Keep',         DefaultBackupKeep         );
+  FBackupFile          := IniFile.ReadString ('Backup',  'File',         DefaultBackupFile         );
 end;
 
 { Write settings to an INI file. }
@@ -421,18 +432,18 @@ begin
   MaybeBackup;
 
   { Save the settings. }
-  IniFile.WriteString('General', 'AudioOutput', FGeneralAudioOutput);
-  IniFile.WriteBool('General', 'OutputAppend', FGeneralOutputAppend);
-  IniFile.WriteString('General', 'OutputFile', FGeneralOutputFile);
-  IniFile.WriteInteger('General', 'Priority', FGeneralPriority);
-  IniFile.WriteInteger('General', 'Rate', FGeneralRate);
-  IniFile.WriteString('General', 'Voice', FGeneralVoice);
-  IniFile.WriteInteger('General', 'Volume', FGeneralVolume);
-  IniFile.WriteBool('Backup', 'Create', FBackupCreate);
-  IniFile.WriteString('Backup', 'Format', FBackupFormat);
-  IniFile.WriteString('Backup', 'When', FBackupWhen);
-  IniFile.WriteInteger('Backup', 'Keep', FBackupKeep);
-  IniFile.WriteString('Backup', 'File', FBackupFile);
+  IniFile.WriteString ('General', 'AudioOutput',  FGeneralAudioOutput);
+  IniFile.WriteBool   ('General', 'OutputAppend', FGeneralOutputAppend);
+  IniFile.WriteString ('General', 'OutputFile',   FGeneralOutputFile);
+  IniFile.WriteInteger('General', 'Priority',     FGeneralPriority);
+  IniFile.WriteInteger('General', 'Rate',         FGeneralRate);
+  IniFile.WriteString ('General', 'Voice',        FGeneralVoice);
+  IniFile.WriteInteger('General', 'Volume',       FGeneralVolume);
+  IniFile.WriteBool   ('Backup',  'Create',       FBackupCreate);
+  IniFile.WriteString ('Backup',  'Format',       FBackupFormat);
+  IniFile.WriteString ('Backup',  'When',         FBackupWhen);
+  IniFile.WriteInteger('Backup',  'Keep',         FBackupKeep);
+  IniFile.WriteString ('Backup',  'File',         FBackupFile);
   IniFile.UpdateFile;
 end;
 
