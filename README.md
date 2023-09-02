@@ -44,6 +44,8 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
   * Tests for the vtvapp class.
   * Created tests for the filelist Unit.
   * Created tests for the vtvsettings class. This could use more work.
+* Add `-C` option to not load a configuration file. Mostly for testing.
+* Write all spoken text to a log file with a timestamp.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library.
 * Expand the interactive user interface.
