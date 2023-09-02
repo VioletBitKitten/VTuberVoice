@@ -90,6 +90,7 @@ implementation
 { Perform cleanup. }
 destructor TVTVApp.Destroy;
 begin
+  PrintDiagMessage('Shutting down VTuberVoice.');
   PrintDiagMessage('Freeing the Voice object.');
   FreeAndNil(SpVoice);
 
@@ -104,6 +105,7 @@ begin
         WriteLn('Unable to save settings: ', E.Message);
       end;
     end;
+    PrintDiagMessage('Freeing the Settings object.');
     FreeandNil(Settings);
   end;
 
@@ -136,6 +138,7 @@ begin
   ProcessOptionsSpeech;
   if not Terminated then
   begin
+    PrintDiagMessage('Entering Read/Speak loop.');
     ReadSpeakLoop;
     Terminate;
   end;
@@ -404,6 +407,8 @@ begin
   Temp := SpVoice.Voice;
   WriteLn('Voice: ', Temp.GetDescription);
   WriteLn('Volume: ', SpVoice.Volume);
+  WriteLn('Rate: ', SpVoice.Rate);
+  WriteLn('Priority: ', SpVoice.Priority);
   if WriteText then
   begin
     if OutputAppend then
