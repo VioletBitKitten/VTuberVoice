@@ -41,18 +41,18 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 ## TODO
 
 * Create Unit tests. `In Progress.`
-  * Tests for the vtvapp class.
-  * Created tests for the filelist Unit.
-  * Created tests for the vtvsettings class. This could use more work.
+  * Tests for the `vtvap`p class.
+  * Created tests for the `filelist`` Class.
+  * Created tests for the `vtvsettings`` class. This could use more work.
 * Add `-C` option to not load a configuration file. Mostly for testing.
 * Write all spoken text to a log file with a timestamp.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
-* For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library.
 * Expand the interactive user interface.
   * Add aliases for frequently spoken phrases. `In Progress.`
     * Simple alias support. Can make it better.
     * Add ability to create/delete/edit aliases from VTV.
     * Added Abbreviation support. Rather inefficient.
+    * Add variables to be used with aliases? Like a variable for your name and a greeting alias.
   * Add support for "speaking" WAV files.
 * Expand support for writing spoken text to a file.
   * More options for how to write to the file.
@@ -73,6 +73,7 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
   * Add options for how to exit the application.
 * Sometimes when quitting VTV there is an exception updating the configuration file.
   * This was caused by the voices changing the directory. Fixed this by always using an absolute path for the configuration file.
+* For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library. Solved this with the mmdeviceapi.pas file.
 
 ## Reference
 
