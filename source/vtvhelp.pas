@@ -17,6 +17,11 @@ interface
 uses
   sysutils;
 
+procedure CommandHelp;
+procedure CommandHelp(Arg : String);
+
+implementation
+
 const
   HelpTextMain : Array[1..16] of String = (
     'Commands:',
@@ -36,11 +41,6 @@ const
     '',
     'End a line with "\" to cancel the input.'
   );
-
-procedure CommandHelp;
-procedure CommandHelp(Arg : String);
-
-implementation
 
 { Print the main help text. }
 procedure CommandHelp;
