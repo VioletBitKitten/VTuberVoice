@@ -45,7 +45,11 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
   * Created tests for the `filelist`` Class.
   * Created tests for the `vtvsettings`` class. This could use more work.
 * Add `-C` option to not load a configuration file. Mostly for testing.
-* Write all spoken text to a log file with a timestamp.
+* Write spoken text to a log file.
+  * Configurable timestamp.
+  * Write spoken text before modification with a timestamp.
+  * Write a message for startup and shutdown.
+  * Events to log for a mode verbose mode?
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * Expand the interactive user interface.
   * Add aliases for frequently spoken phrases. `In Progress.`
