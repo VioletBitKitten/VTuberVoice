@@ -1,8 +1,10 @@
-*.swp
+*.a
 *.exe
 *.o
 *.ppu
-Makefile
+*.swp
 fpcmade.*
-units
+Makefile
+out
 scratch
+units
