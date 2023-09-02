@@ -90,36 +90,36 @@ implementation
 { Perform cleanup. }
 destructor TVTVApp.Destroy;
 begin
-PrintDiagMessage('Freeing the Voice object.');
-FreeAndNil(SpVoice);
+  PrintDiagMessage('Freeing the Voice object.');
+  FreeAndNil(SpVoice);
 
-if Settings <> Nil then
-begin
-  PrintDiagMessage('Saving Settings.');
-  try
-    Settings.SaveSettings;
-  except
-    on E: EFCreateError do
-    begin
-      WriteLn('Unable to save settings: ', E.Message);
+  if Settings <> Nil then
+  begin
+    PrintDiagMessage('Saving Settings.');
+    try
+      Settings.SaveSettings;
+    except
+      on E: EFCreateError do
+      begin
+        WriteLn('Unable to save settings: ', E.Message);
+      end;
     end;
+    FreeandNil(Settings);
   end;
-  FreeandNil(Settings);
-end;
 
-if WriteText then
-begin
-  PrintDiagMessage('Closing the output file.');
-  CloseFile(OutputFile);
-end;
+  if WriteText then
+  begin
+    PrintDiagMessage('Closing the output file.');
+    CloseFile(OutputFile);
+  end;
 
-if WriteWav then
-begin
-  PrintDiagMessage('Closing the output wave file.');
-  SpFileStream.Close;
-end;
+  if WriteWav then
+  begin
+    PrintDiagMessage('Closing the output wave file.');
+    SpFileStream.Close;
+  end;
 
-inherited;
+  inherited;
 end;
 
 { Run the application. }
@@ -144,7 +144,7 @@ end;
 { Print the help text. }
 procedure TVTVApp.Help;
 begin
-WriteLn(Title);
+  WriteLn(Title);
   WriteLn('Usage: ', ExtractFileName(ExeName), ' [OPTION] [TEXT]...');
   WriteLn('Speak text using Micrsoft SAPI.');
   WriteLn('If text is given ont he command line then the');
@@ -187,7 +187,6 @@ end;
 
 procedure TVTVApp.LoadSettings;
 begin
-
   PrintDiagMessage('Loading settings from the configuration file: ' + Settings.FileName);
   if Settings.AudioOutput <> '' then
     SetAudioOutput(Settings.AudioOutput);
@@ -421,7 +420,7 @@ procedure TVTVApp.SetAudioOutput(NewOutput : String);
 var
   OutputID : Integer;
 begin
-try
+  try
     if TryStrToInt(NewOutput, OutputID) then
       SpVoice.SetAudioOutputID(OutputID)
     else
@@ -602,20 +601,20 @@ var
 begin
   AssignFile(FileHandle, FileName);
   try
-      { Open the file. }
-      reset(FileHandle);
-      { Speak the contents of the file. }
-      while not eof(FileHandle) do
-      begin
-        readln(FileHandle, Text);
-        SpeakText(Text);
-      end;
-      { Close the file. }
-      CloseFile(FileHandle);
-    except
-      on E: EInOutError do
-      writeln('Unable to o open the file "', FileName, '" for reading. ', E.Message);
+    { Open the file. }
+    reset(FileHandle);
+    { Speak the contents of the file. }
+    while not eof(FileHandle) do
+    begin
+      readln(FileHandle, Text);
+      SpeakText(Text);
     end;
+    { Close the file. }
+    CloseFile(FileHandle);
+  except
+    on E: EInOutError do
+    writeln('Unable to o open the file "', FileName, '" for reading. ', E.Message);
+  end;
 end;
 
 { Speak a list of strings. }
@@ -636,6 +635,7 @@ var
   OldWord     : String;
   NewWord     : String;
 begin
+  { Write the text before making changes for speaking the text. }
   if WriteText then
   begin
     WriteLn(OutputFile, Text);
@@ -831,7 +831,7 @@ begin
   begin
     SetRate(NewRate);
     Settings.Rate := SpVoice.Rate;
-    end;
+  end;
 end;
 
 procedure TVTVApp.HandleCommandSaveSettings;
@@ -855,7 +855,7 @@ begin
     CurrentVoice := SpVoice.Voice;
     {$warn 6058 off} // Stop the annoying "marked as inline is not inlined" errors.
     Settings.Voice := CurrentVoice.GetDescription;
-    end;
+  end;
 end;
 
 procedure TVTVApp.HandleCommandVolume(NewVolume : String);

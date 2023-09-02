@@ -33,7 +33,6 @@ type
     procedure TestRefreshFiles;
     procedure TestSortBySize;
     procedure TestSortByTime;
-
   end;
 
 implementation

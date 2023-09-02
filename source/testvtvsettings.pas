@@ -112,7 +112,6 @@ begin
   AssertEquals('Setting BackupFormat should equal test value.', Settings.BackupFormat, TestBackupFormat);
   AssertEquals('Setting BackupWhen should equal test value.',   Settings.BackupWhen  , TestBackupWhen  );
   AssertEquals('Setting BackupKeep should equal test value.',   Settings.BackupKeep  , TestBackupKeep  );
-
 end;
 
 { Load the settings and make sure they have the right values.}
