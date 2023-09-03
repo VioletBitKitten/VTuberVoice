@@ -414,9 +414,13 @@ procedure TVTVApp.LogWriteOutput(Text : String);
 var
   Timestamp : String;
 begin
+  { Do not bother with empty lines. }
+  if Text = '' then
+    Exit;
+
   Timestamp := FormatDateTime(LogFormat, Now);
-    WriteLn(LogFile, Timestamp, ': ', Text);
-    Flush(LogFile);
+  WriteLn(LogFile, Timestamp, ': ', Text);
+  Flush(LogFile);
 end;
 
 { Print a diagnostic message if Diagnostic is true. }
