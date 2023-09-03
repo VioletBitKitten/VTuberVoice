@@ -48,7 +48,7 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 * Write spoken text to a log file.
   * Configurable timestamp. `Done`
   * Write spoken text before modification with a timestamp. `Done`
-  * Write a message for startup and shutdown.
+  * Write a message for startup and shutdown. `Done`
   * Events to log for a mode verbose mode?
 * Cleanup the Variables in TVTVApp. They are a bit of a mess.
   * Not consistent: OutputAppend, OutputFile, OutputFileName, WriteText

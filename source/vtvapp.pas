@@ -96,6 +96,7 @@ implementation
 { Perform cleanup. }
 destructor TVTVApp.Destroy;
 begin
+  LogWriteOutput('Shutdown of ' + Title);
   PrintDiagMessage('Shutting down VTuberVoice.');
   PrintDiagMessage('Freeing the Voice object.');
   FreeAndNil(SpVoice);
@@ -222,6 +223,7 @@ begin
   begin
     SetupLogOutput(Settings.LogFile);
     LogFormat := Settings.LogFormat;
+    LogWriteOutput('Startup of ' + Title);
   end;
 end;
 
