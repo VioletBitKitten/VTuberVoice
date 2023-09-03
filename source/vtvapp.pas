@@ -23,11 +23,15 @@ uses
 type
   TVTVApp = Class(TCustomApplication)
   private
+  // TODO: Clean some of these up. Organic growth is messy.
     AbbrevList      : TStringList;
     AliasList       : TStringList;
     Diagnostic      : Boolean;
     Interactive     : Boolean;
     LongOptions     : TStringList;
+    LogFile         : TextFile;
+    LogFormat       : String;
+    LogOutput       : Boolean;
     NonOptions      : TStringList;
     OutputAppend    : Boolean;
     OutputFile      : TextFile;
@@ -54,11 +58,13 @@ type
     { Helper Methods }
     procedure ListVoices;
     procedure ListOutputs;
+    procedure LogWriteOutput(Text : String);
     procedure PrintDiagMessage(Message : String);
     procedure PrintDiagData;
     procedure SetAudioOutput(NewOutput : String);
     procedure SetPriority(NewPriority : String);
     procedure SetRate(NewRate : String);
+    procedure SetupLogOutput(FileName : String);
     procedure SetupOutput(FileName : String; AppendFile : Boolean);
     procedure SetupOutputWav(FileName : String);
     procedure SetVoice(NewVoice : String);
@@ -113,6 +119,12 @@ begin
   begin
     PrintDiagMessage('Closing the output file.');
     CloseFile(OutputFile);
+  end;
+
+  if LogOutput then
+  begin
+    PrintDiagMessage('Closing the log file.');
+    CloseFile(LogFile);
   end;
 
   if WriteWav then
@@ -191,6 +203,8 @@ end;
 procedure TVTVApp.LoadSettings;
 begin
   PrintDiagMessage('Loading settings from the configuration file: ' + Settings.FileName);
+
+  { SpVoice Settings. }
   if Settings.AudioOutput <> '' then
     SetAudioOutput(Settings.AudioOutput);
   if Settings.OutputFile <> '' then
@@ -202,6 +216,13 @@ begin
   SetVolume(IntToStr(Settings.Volume));
   AliasList := Settings.Aliases;
   AbbrevList := Settings.Abbreviations;
+
+  { Log Settings. }
+  if Settings.LogOutput then
+  begin
+    SetupLogOutput(Settings.LogFile);
+    LogFormat := Settings.LogFormat;
+  end;
 end;
 
 { ----------========== Command Line Options ==========----- }
@@ -388,6 +409,16 @@ begin
     WriteLn(VoiceIndex, ' - ', Voices[VoiceIndex]);
 end;
 
+{ Write text to the log file. }
+procedure TVTVApp.LogWriteOutput(Text : String);
+var
+  Timestamp : String;
+begin
+  Timestamp := FormatDateTime(LogFormat, Now);
+    WriteLn(LogFile, Timestamp, ': ', Text);
+    Flush(LogFile);
+end;
+
 { Print a diagnostic message if Diagnostic is true. }
 procedure TVTVApp.PrintDiagMessage(Message : String);
 begin
@@ -493,9 +524,33 @@ begin
   end;
 end;
 
+
+{ Setup the log file to write spoken text to. }
+procedure TVTVApp.SetupLogOutput(FileName : String);
+begin
+  PrintDiagMessage('Writing output to the log file: ' + FileName);
+  LogOutput := True;
+  AssignFile(LogFile, FileName);
+  try
+    { Open the file. }
+    if FileExists(FileName) then
+      append(LogFile)
+    else
+      rewrite(LogFile);
+  except
+    on E: EInOutError do
+      begin
+        writeln('Unable to open the file "', FileName, '" for writing. ', E.Message);
+        if not Interactive then
+          Terminate;
+      end
+  end;
+end;
+
 { Setup the file to write text to. }
 procedure TVTVApp.SetupOutput(FileName : String; AppendFile : Boolean);
 begin
+  PrintDiagMessage('Writing output to the file: ' + FileName);
   WriteText := True;
   AssignFile(OutputFile, FileName);
   try
@@ -646,6 +701,10 @@ begin
     WriteLn(OutputFile, Text);
     Flush(OutputFile);
   end;
+
+  { Log the text is requested. }
+  if LogOutput then
+    LogWriteOutput(Text);
 
   { Replace abbreviations before speaking. }
   for AbbrevIndex := 0 to AbbrevList.Count - 1 do

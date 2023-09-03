@@ -26,6 +26,9 @@ type
     IniFileName : String;
     { General Settings. }
     FGeneralAudioOutput   : String;
+    FGeneralLogFile       : String;
+    FGeneralLogFormat     : String;
+    FGeneralLogOutput     : Boolean;
     FGeneralOutputFile    : String;
     FGeneralOutputAppend  : Boolean;
     FGeneralPriority      : Integer;
@@ -45,6 +48,9 @@ type
     procedure MaybeBackup;
     { Property Methods }
     procedure SetGeneralAudioOutput(NewOutput : String);
+    procedure SetGeneralLogFile(NewLogFile : String);
+    procedure SetGeneralLogFormat(NewLogFormat : String);
+    procedure SetGeneralLogOutput(NewLogOutput : Boolean);
     procedure SetGeneralOutputAppend(NewAppend : Boolean);
     procedure SetGeneralOutputFile(NewFile : String);
     procedure SetGeneralPriority(NewPriority : Integer);
@@ -66,6 +72,9 @@ type
     property FileName     : String  read IniFileName;
     { General Settings }
     property AudioOutput  : String  read FGeneralAudioOutput  write SetGeneralAudioOutput;
+    property LogFile      : String  read FGeneralLogFile      write SetGeneralLogFile;
+    property LogFormat    : String  read FGeneralLogFormat    write SetGeneralLogFormat;
+    property LogOutput    : Boolean read FGeneralLogOutput    write SetGeneralLogOutput;
     property OutputAppend : Boolean read FGeneralOutputAppend write SetGeneralOutputAppend;
     property OutputFile   : String  read FGeneralOutputFile   write SetGeneralOutputFile;
     property Priority     : Integer read FGeneralPriority     write SetGeneralPriority;
@@ -88,6 +97,9 @@ implementation
 const
   { Default settings. }
   DefaultGeneralAudioOutput  = '';
+  DefaultGeneralLogFile      = '';
+  DefaultGeneralLogFormat    = 'YYYY-MM-DD-hh:mm:ss.zz';
+  DefaultGeneralLogOutput    = False;
   DefaultGeneralOutputAppend = False;
   DefaultGeneralOutputFile   = '';
   DefaultGeneralPriority     = 0;
@@ -100,7 +112,7 @@ const
   DefaultBackupKeep          = 20;
   DefaultBackupFile          = '';
   { Header for a new INI file. }
-  VTVDefaultINIHeader : Array[1..43] of String = (
+  VTVDefaultINIHeader : Array[1..46] of String = (
     '; Configuration file for VTuberVoice.',
     '; TTS Software for VTubers who don''t or can''t speak.',
     ';',
@@ -116,6 +128,9 @@ const
     '[General]',
     '; General settings.',
     '; AudioOutput = Speakers ; Set the audio output device.',
+    '; LogFile = log.txt ; File to log spoken text to.',
+    '; LogFormat = YYYY-MM-DD-hhmmsszz ; Format for the log entry timestamps.',
+    '; LogOutput = False ; Log all spoken text to a file.',
     '; OutputFile = tts_out.txt ; Set the output file spoken text is written to.',
     '; OutputAppend = 1 ; Append text to the output file, 1 for yes, 0 for no.',
     '; Priority = 0 ; Set the priorty for speech, 0 to 2. Rarely needed.',
@@ -259,6 +274,21 @@ procedure TVTVSettings.SetGeneralAudioOutput(NewOutput : String);
 begin
   FGeneralAudioOutput := NewOutput;
   IniFile.WriteString('General', 'AudioOutput', FGeneralAudioOutput);
+end;
+procedure TVTVSettings.SetGeneralLogFile(NewLogFile : String);
+begin
+  FGeneralLogFile := NewLogFile;
+  IniFile.WriteString('General', 'LogFile', FGeneralLogFile);
+end;
+procedure TVTVSettings.SetGeneralLogFormat(NewLogFormat : String);
+begin
+  FGeneralLogFormat := NewLogFormat;
+  IniFile.WriteString('General', 'LogFormat', FGeneralLogFormat);
+end;
+procedure TVTVSettings.SetGeneralLogOutput(NewLogOutput : Boolean);
+begin
+  FGeneralLogOutput := NewLogOutput;
+  IniFile.WriteBool('General', 'LogOutput', FGeneralLogOutput);
 end;
 procedure TVTVSettings.SetGeneralOutputAppend(Newappend : Boolean);
 begin
@@ -412,6 +442,9 @@ end;
 procedure TVTVSettings.LoadSettings;
 begin
   FGeneralAudioOutput  := IniFile.ReadString ('General', 'AudioOutput',  DefaultGeneralAudioOutput );
+  FGeneralLogFile      := IniFile.ReadString ('General', 'LogFile',      DefaultGeneralLogFile );
+  FGeneralLogFormat    := IniFile.ReadString ('General', 'LogFormat',    DefaultGeneralLogFormat );
+  FGeneralLogOutput    := IniFile.ReadBool   ('General', 'LogOutput',    DefaultGeneralLogOutput);
   FGeneralOutputAppend := IniFile.ReadBool   ('General', 'OutputAppend', DefaultGeneralOutputAppend);
   FGeneralOutputFile   := IniFile.ReadString ('General', 'OutputFile',   DefaultGeneralOutputFile  );
   FGeneralPriority     := IniFile.ReadInteger('General', 'Priority',     DefaultGeneralPriority    );
@@ -433,6 +466,9 @@ begin
 
   { Save the settings. }
   IniFile.WriteString ('General', 'AudioOutput',  FGeneralAudioOutput);
+  IniFile.WriteString ('General', 'LogFile',      FGeneralLogFile);
+  IniFile.WriteString ('General', 'LogFormat',    FGeneralLogFormat);
+  IniFile.WriteBool   ('General', 'LogOutput',    FGeneralLogOutput);
   IniFile.WriteBool   ('General', 'OutputAppend', FGeneralOutputAppend);
   IniFile.WriteString ('General', 'OutputFile',   FGeneralOutputFile);
   IniFile.WriteInteger('General', 'Priority',     FGeneralPriority);
