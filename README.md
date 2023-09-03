@@ -46,10 +46,13 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
   * Created tests for the `vtvsettings`` class. This could use more work.
 * Add `-C` option to not load a configuration file. Mostly for testing.
 * Write spoken text to a log file.
-  * Configurable timestamp.
-  * Write spoken text before modification with a timestamp.
+  * Configurable timestamp. `Done`
+  * Write spoken text before modification with a timestamp. `Done`
   * Write a message for startup and shutdown.
   * Events to log for a mode verbose mode?
+* Cleanup the Variables in TVTVApp. They are a bit of a mess.
+  * Not consistent: OutputAppend, OutputFile, OutputFileName, WriteText
+* Better handling of writing a blank line to the output file. It is getting messy handling this special case.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * Expand the interactive user interface.
   * Add aliases for frequently spoken phrases. `In Progress.`
