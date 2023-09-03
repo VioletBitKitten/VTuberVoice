@@ -52,7 +52,6 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
   * Events to log for a mode verbose mode?
 * Cleanup the Variables in TVTVApp. They are a bit of a mess.
   * Not consistent: OutputAppend, OutputFile, OutputFileName, WriteText
-* Better handling of writing a blank line to the output file. It is getting messy handling this special case.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * Expand the interactive user interface.
   * Add aliases for frequently spoken phrases. `In Progress.`
@@ -81,6 +80,7 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 * Sometimes when quitting VTV there is an exception updating the configuration file.
   * This was caused by the voices changing the directory. Fixed this by always using an absolute path for the configuration file.
 * For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library. Solved this with the mmdeviceapi.pas file.
+* Better handling of writing a blank line to the output file. It is getting messy handling this special case.
 
 ## Reference
 

@@ -69,6 +69,7 @@ type
     procedure SetupOutputWav(FileName : String);
     procedure SetVoice(NewVoice : String);
     Procedure SetVolume(NewVolume : String);
+    procedure WriteOutputFile(Text : String);
     { Speech Methods }
     procedure SpeakAlias(AliasName : String);
     procedure SpeakFile(FileName : String);
@@ -199,6 +200,7 @@ begin
   OutputFileName := '';
   WriteText := False;
   WriteWav := False;
+  LogOutput := False;
 end;
 
 procedure TVTVApp.LoadSettings;
@@ -416,6 +418,10 @@ procedure TVTVApp.LogWriteOutput(Text : String);
 var
   Timestamp : String;
 begin
+  { Do not write to the log if it is not enabled. }
+  if not LogOutput then
+    Exit;
+
   { Do not bother with empty lines. }
   if Text = '' then
     Exit;
@@ -645,6 +651,13 @@ begin
   end;
 end;
 
+{ Write to the output file. }
+procedure TVTVApp.WriteOutputFile(Text : String);
+begin
+  WriteLn(OutputFile, Text);
+  Flush(OutputFile);
+end;
+
 { ----------========== Speech Methods ==========----- }
 
 { Speak an alias. }
@@ -704,13 +717,11 @@ begin
   { Write the text before making changes for speaking the text. }
   if WriteText then
   begin
-    WriteLn(OutputFile, Text);
-    Flush(OutputFile);
+    WriteOutputFile(Text);
   end;
 
   { Log the text is requested. }
-  if LogOutput then
-    LogWriteOutput(Text);
+  LogWriteOutput(Text);
 
   { Replace abbreviations before speaking. }
   for AbbrevIndex := 0 to AbbrevList.Count - 1 do
@@ -799,7 +810,10 @@ begin
     if Length(Text) = 0 then
       Continue
     else if Text = '\' then
-      Text := ''
+    begin
+      WriteOutputFile('');
+      Continue;
+    end
     else if Text = '?' then
     begin
       CommandHelp;
