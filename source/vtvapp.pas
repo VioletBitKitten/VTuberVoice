@@ -23,7 +23,6 @@ uses
 type
   TVTVApp = Class(TCustomApplication)
   private
-  // TODO: Clean some of these up. Organic growth is messy.
     AbbrevList      : TStringList;
     AliasList       : TStringList;
     Diagnostic      : Boolean;
