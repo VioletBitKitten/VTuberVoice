@@ -28,21 +28,21 @@ type
     AliasList       : TStringList;
     Diagnostic      : Boolean;
     Interactive     : Boolean;
-    LongOptions     : TStringList;
-    LogFile         : TextFile;
     LogFormat       : String;
-    LogOutput       : Boolean;
+    LogFile         : TextFile;
+    LogWrite        : Boolean;
     NonOptions      : TStringList;
+    OptionsLong     : TStringList;
+    OptionsShort    : String;
     OutputAppend    : Boolean;
     OutputFile      : TextFile;
     OutputFileName  : String;
+    OutputWaveWrite : Boolean;
+    OutputWrite     : Boolean;
     Settings        : TVTVSettings;
     SettingsFile    : String;
-    ShortOptions    : String;
     SpFileStream    : TSpFileStream;
     SpVoice         : TSpVoice;
-    WriteText       : Boolean;
-    WriteWav        : Boolean;
   public
     { Application Setup }
     destructor Destroy; override;
@@ -51,25 +51,26 @@ type
     procedure Initialize; override;
     procedure LoadSettings;
     { Command Line Options }
-    procedure ProcessOptions;
-    procedure ProcessOptionsSettings;
-    procedure ProcessOptionsSpeech;
-    procedure SetupOptions;
+    procedure OptionsProcess;
+    procedure OptionsProcessSettings;
+    procedure OptionsProcessSpeech;
+    procedure OptionsSetup;
     { Helper Methods }
+    procedure DiagPringData;
+    procedure DiagPrintMessage(Message : String);
+    procedure LogSetup(FileName : String);
+    procedure LogWriteText(Text : String);
+    procedure OutputSetup(FileName : String; AppendFile : Boolean);
+    procedure OutputWaveSetup(FileName : String);
+    procedure OutputWriteText(Text : String);
+    { Voice Settings Methods }
+    procedure ListAudioOutputs;
     procedure ListVoices;
-    procedure ListOutputs;
-    procedure LogWriteOutput(Text : String);
-    procedure PrintDiagMessage(Message : String);
-    procedure PrintDiagData;
     procedure SetAudioOutput(NewOutput : String);
     procedure SetPriority(NewPriority : String);
     procedure SetRate(NewRate : String);
-    procedure SetupLogOutput(FileName : String);
-    procedure SetupOutput(FileName : String; AppendFile : Boolean);
-    procedure SetupOutputWav(FileName : String);
     procedure SetVoice(NewVoice : String);
     Procedure SetVolume(NewVolume : String);
-    procedure WriteOutputFile(Text : String);
     { Speech Methods }
     procedure SpeakAlias(AliasName : String);
     procedure SpeakFile(FileName : String);
@@ -97,14 +98,14 @@ implementation
 { Perform cleanup. }
 destructor TVTVApp.Destroy;
 begin
-  LogWriteOutput('Shutdown of ' + Title);
-  PrintDiagMessage('Shutting down VTuberVoice.');
-  PrintDiagMessage('Freeing the Voice object.');
+  LogWriteText('Shutdown of ' + Title);
+  DiagPrintMessage('Shutting down VTuberVoice.');
+  DiagPrintMessage('Freeing the Voice object.');
   FreeAndNil(SpVoice);
 
   if Settings <> Nil then
   begin
-    PrintDiagMessage('Saving Settings.');
+    DiagPrintMessage('Saving Settings.');
     try
       Settings.SaveSettings;
     except
@@ -113,25 +114,25 @@ begin
         WriteLn('Unable to save settings: ', E.Message);
       end;
     end;
-    PrintDiagMessage('Freeing the Settings object.');
+    DiagPrintMessage('Freeing the Settings object.');
     FreeandNil(Settings);
   end;
 
-  if WriteText then
+  if OutputWrite then
   begin
-    PrintDiagMessage('Closing the output file.');
+    DiagPrintMessage('Closing the output file.');
     CloseFile(OutputFile);
   end;
 
-  if LogOutput then
+  if LogWrite then
   begin
-    PrintDiagMessage('Closing the log file.');
+    DiagPrintMessage('Closing the log file.');
     CloseFile(LogFile);
   end;
 
-  if WriteWav then
+  if OutputWaveWrite then
   begin
-    PrintDiagMessage('Closing the output wave file.');
+    DiagPrintMessage('Closing the output wave file.');
     SpFileStream.Close;
   end;
 
@@ -141,18 +142,18 @@ end;
 { Run the application. }
 procedure TVTVApp.DoRun;
 begin
-  ProcessOptions;
+  OptionsProcess;
   if Terminated then Exit;
   Settings := TVTVSettings.Create(SettingsFile);
   LoadSettings;
-  ProcessOptionsSettings;
+  OptionsProcessSettings;
   if Terminated then Exit;
   if Diagnostic then
-    PrintDiagData;
-  ProcessOptionsSpeech;
+    DiagPringData;
+  OptionsProcessSpeech;
   if not Terminated then
   begin
-    PrintDiagMessage('Entering Read/Speak loop.');
+    DiagPrintMessage('Entering Read/Speak loop.');
     ReadSpeakLoop;
     Terminate;
   end;
@@ -191,27 +192,27 @@ end;
 { Initialize the application. }
 procedure TVTVApp.Initialize;
 begin
-  SetupOptions;
+  OptionsSetup;
   SpVoice := TSpVoice.Create;
   SpVoice.ExceptionsEnabled := True;
   Diagnostic := False;
   Interactive := False;
   SettingsFile := '';
   OutputFileName := '';
-  WriteText := False;
-  WriteWav := False;
-  LogOutput := False;
+  OutputWrite := False;
+  OutputWaveWrite := False;
+  LogWrite := False;
 end;
 
 procedure TVTVApp.LoadSettings;
 begin
-  PrintDiagMessage('Loading settings from the configuration file: ' + Settings.FileName);
+  DiagPrintMessage('Loading settings from the configuration file: ' + Settings.FileName);
 
   { SpVoice Settings. }
   if Settings.AudioOutput <> '' then
     SetAudioOutput(Settings.AudioOutput);
   if Settings.OutputFile <> '' then
-    SetupOutput(Settings.OutputFile, Settings.OutputAppend);
+    OutputSetup(Settings.OutputFile, Settings.OutputAppend);
   SetPriority(IntToStr(Settings.Priority));
   SetRate(IntToStr(Settings.Rate));
   if Settings.Voice <> '' then
@@ -223,22 +224,21 @@ begin
   { Log Settings. }
   if Settings.LogOutput then
   begin
-    SetupLogOutput(Settings.LogFile);
-    LogFormat := Settings.LogFormat;
-    LogWriteOutput('Startup of ' + Title);
+    LogSetup(Settings.LogFile);
+    LogWriteText('Startup of ' + Title);
   end;
 end;
 
 { ----------========== Command Line Options ==========----- }
 
 { Process the command line options that need to be handles first. }
-procedure TVTVApp.ProcessOptions;
+procedure TVTVApp.OptionsProcess;
 var
   Text : String;
 begin
   { Check the command line options. }
   NonOptions := TStringList.Create;
-  Text := CheckOptions(ShortOptions, LongOptions, Nil, NonOptions, True);
+  Text := CheckOptions(OptionsShort, OptionsLong, Nil, NonOptions, True);
 
   { Check for errors with the command line options. }
   if Length(Text) > 0 then
@@ -255,7 +255,7 @@ begin
   { List the available Audio Outputs. }
   if HasOption('O', 'outputs') then
   begin
-    ListOutputs;
+    ListAudioOutputs;
     Terminate;
     Exit;
   end;
@@ -284,7 +284,7 @@ begin
 end;
 
 { Process the command line options that change settings. }
-procedure TVTVApp.ProcessOptionsSettings;
+procedure TVTVApp.OptionsProcessSettings;
 var
   Text : String;
 begin
@@ -335,18 +335,18 @@ begin
   { Setup the file to write text to. }
   if HasOption('w', 'write-to-file') then
   begin
-    SetupOutput(GetOptionValue('w', 'write-to-file'), HasOption('a', 'append'));
+    OutputSetup(GetOptionValue('w', 'write-to-file'), HasOption('a', 'append'));
   end;
 
   { Setup the wav file to record text to. }
   if HasOption('W', 'wav-file') then
   begin
-    SetupOutputWav(GetOptionValue('W', 'wav-file'));
+    OutputWaveSetup(GetOptionValue('W', 'wav-file'));
   end;
 end;
 
 { Process the command line options that trigger a speech actions. }
-procedure TVTVApp.ProcessOptionsSpeech;
+procedure TVTVApp.OptionsProcessSpeech;
 begin
   { Speak the contents of a text file. }
   if HasOption('f', 'speak-file') then
@@ -359,7 +359,7 @@ begin
   { If there are any non-Options speak them. }
   if (NonOptions.Count > 0) and not Terminated then
   begin
-    PrintDiagMessage('Speaking text from command line.');
+    DiagPrintMessage('Speaking text from command line.');
     SpeakList(NonOptions);
     Terminate;
     Exit
@@ -367,30 +367,156 @@ begin
 end;
 
 { Setup the command line options. }
-procedure TVTVApp.SetupOptions;
+procedure TVTVApp.OptionsSetup;
 begin
-  ShortOptions := 'ac:Df:hl:Oo:p:r:Vv:w:W:';
-  LongOptions := TStringList.Create;
-  LongOptions.Add('help');
-  LongOptions.Add('append');
-  LongOptions.Add('config:');
-  LongOptions.Add('diag');
-  LongOptions.Add('output:');
-  LongOptions.Add('outputs');
-  LongOptions.Add('priority:');
-  LongOptions.Add('rate:');
-  LongOptions.Add('speak-file:');
-  LongOptions.Add('voice:');
-  LongOptions.Add('voices');
-  LongOptions.Add('volume:');
-  LongOptions.Add('write-to-file:');
-  LongOptions.Add('wav-file:');
+  OptionsShort := 'ac:Df:hl:Oo:p:r:Vv:w:W:';
+  OptionsLong := TStringList.Create;
+  OptionsLong.Add('help');
+  OptionsLong.Add('append');
+  OptionsLong.Add('config:');
+  OptionsLong.Add('diag');
+  OptionsLong.Add('output:');
+  OptionsLong.Add('outputs');
+  OptionsLong.Add('priority:');
+  OptionsLong.Add('rate:');
+  OptionsLong.Add('speak-file:');
+  OptionsLong.Add('voice:');
+  OptionsLong.Add('voices');
+  OptionsLong.Add('volume:');
+  OptionsLong.Add('write-to-file:');
+  OptionsLong.Add('wav-file:');
 end;
 
 { ----------========== Helper Methods ==========----- }
 
+{ Write diagnostic data. }
+procedure TVTVApp.DiagPringData;
+var
+  Temp : Variant;
+begin
+  WriteLn;
+  WriteLn('Diagnostic Data:');
+  Temp := SpVoice.AudioOutput;
+  WriteLn('Output device: ', Temp.GetDescription);
+  Temp := SpVoice.Voice;
+  WriteLn('Voice: ', Temp.GetDescription);
+  WriteLn('Volume: ', SpVoice.Volume);
+  WriteLn('Rate: ', SpVoice.Rate);
+  WriteLn('Priority: ', SpVoice.Priority);
+  if OutputWrite then
+  begin
+    if OutputAppend then
+      Write('Appending')
+    else
+      Write('Writing');
+    WriteLn(' to the file: ', OutputFileName);
+  end;
+  Writeln;
+end;
+
+{ Print a diagnostic message if Diagnostic is true. }
+procedure TVTVApp.DiagPrintMessage(Message : String);
+begin
+if Diagnostic then
+  WriteLn('Diagnostic: ', Message);
+end;
+
+{ Setup the log file to write spoken text to. }
+procedure TVTVApp.LogSetup(FileName : String);
+begin
+  DiagPrintMessage('Writing output to the log file: ' + FileName);
+  LogWrite := True;
+  LogFormat := Settings.LogFormat;
+  AssignFile(LogFile, FileName);
+  try
+    { Open the file. }
+    if FileExists(FileName) then
+      append(LogFile)
+    else
+      rewrite(LogFile);
+  except
+    on E: EInOutError do
+      begin
+        writeln('Unable to open the file "', FileName, '" for writing. ', E.Message);
+        if not Interactive then
+          Terminate;
+      end
+  end;
+end;
+
+{ Write text to the log file. }
+procedure TVTVApp.LogWriteText(Text : String);
+var
+  Timestamp : String;
+begin
+  { Do not write to the log if it is not enabled. }
+  if not LogWrite then
+    Exit;
+
+  { Do not bother with empty lines. }
+  if Text = '' then
+    Exit;
+
+  Timestamp := FormatDateTime(LogFormat, Now);
+  WriteLn(LogFile, Timestamp, ': ', Text);
+  Flush(LogFile);
+end;
+
+
+{ Setup the file to write text to. }
+procedure TVTVApp.OutputSetup(FileName : String; AppendFile : Boolean);
+begin
+  DiagPrintMessage('Writing output to the file: ' + FileName);
+  OutputWrite := True;
+  AssignFile(OutputFile, FileName);
+  try
+    { Open the file. }
+    if AppendFile and FileExists(FileName) then
+      append(OutputFile)
+    else
+      rewrite(OutputFile);
+    OutputFileName := FileName;
+    OutputAppend := AppendFile;
+  except
+    on E: EInOutError do
+      begin
+        writeln('Unable to open the file "', FileName, '" for writing. ', E.Message);
+        if not Interactive then
+          Terminate;
+      end
+  end;
+end;
+
+{ Setup the wav file to record text to. }
+procedure TVTVApp.OutputWaveSetup(FileName : String);
+begin
+  OutputWaveWrite := True;
+  SpFileStream := TSpFileStream.Create;
+  try
+    { Open the wav file. }
+    SpFileStream.OpenStreamWrite(FileName);
+  except
+    on E: EInOutError do
+    begin
+        writeln('Unable to o open the wav file "', FileName, '" for writing. ', E.Message);
+        if not Interactive then
+          Terminate;
+      end;
+  end;
+  SpVoice.AudioOutputStream := SpFileStream;
+end;
+
+{ Write to the output file. }
+procedure TVTVApp.OutputWriteText(Text : String);
+begin
+  WriteLn(OutputFile, Text);
+  Flush(OutputFile);
+end;
+
+{ ----------========== Voice Settings Methods ==========----- }
+
 { Write a list of audio outputs, along with the output ID #, to STDOUT. }
-procedure TVTVApp.ListOutputs();
+procedure TVTVApp.ListAudioOutputs();
 var
   OutputIndex : Integer;
   Outputs     : TstringList;
@@ -411,56 +537,6 @@ begin
   WriteLn('Available voices:');
   for VoiceIndex := 0 to Voices.Count - 1 do
     WriteLn(VoiceIndex, ' - ', Voices[VoiceIndex]);
-end;
-
-{ Write text to the log file. }
-procedure TVTVApp.LogWriteOutput(Text : String);
-var
-  Timestamp : String;
-begin
-  { Do not write to the log if it is not enabled. }
-  if not LogOutput then
-    Exit;
-
-  { Do not bother with empty lines. }
-  if Text = '' then
-    Exit;
-
-  Timestamp := FormatDateTime(LogFormat, Now);
-  WriteLn(LogFile, Timestamp, ': ', Text);
-  Flush(LogFile);
-end;
-
-{ Print a diagnostic message if Diagnostic is true. }
-procedure TVTVApp.PrintDiagMessage(Message : String);
-begin
-if Diagnostic then
-  WriteLn('Diagnostic: ', Message);
-end;
-
-{ Write diagnostic data. }
-procedure TVTVApp.PrintDiagData;
-var
-  Temp : Variant;
-begin
-  WriteLn;
-  WriteLn('Diagnostic Data:');
-  Temp := SpVoice.AudioOutput;
-  WriteLn('Output device: ', Temp.GetDescription);
-  Temp := SpVoice.Voice;
-  WriteLn('Voice: ', Temp.GetDescription);
-  WriteLn('Volume: ', SpVoice.Volume);
-  WriteLn('Rate: ', SpVoice.Rate);
-  WriteLn('Priority: ', SpVoice.Priority);
-  if WriteText then
-  begin
-    if OutputAppend then
-      Write('Appending')
-    else
-      Write('Writing');
-    WriteLn(' to the file: ', OutputFileName);
-  end;
-  Writeln;
 end;
 
 { Set the Audio Output Device }
@@ -536,72 +612,6 @@ begin
   end;
 end;
 
-
-{ Setup the log file to write spoken text to. }
-procedure TVTVApp.SetupLogOutput(FileName : String);
-begin
-  PrintDiagMessage('Writing output to the log file: ' + FileName);
-  LogOutput := True;
-  AssignFile(LogFile, FileName);
-  try
-    { Open the file. }
-    if FileExists(FileName) then
-      append(LogFile)
-    else
-      rewrite(LogFile);
-  except
-    on E: EInOutError do
-      begin
-        writeln('Unable to open the file "', FileName, '" for writing. ', E.Message);
-        if not Interactive then
-          Terminate;
-      end
-  end;
-end;
-
-{ Setup the file to write text to. }
-procedure TVTVApp.SetupOutput(FileName : String; AppendFile : Boolean);
-begin
-  PrintDiagMessage('Writing output to the file: ' + FileName);
-  WriteText := True;
-  AssignFile(OutputFile, FileName);
-  try
-    { Open the file. }
-    if AppendFile and FileExists(FileName) then
-      append(OutputFile)
-    else
-      rewrite(OutputFile);
-    OutputFileName := FileName;
-    OutputAppend := AppendFile;
-  except
-    on E: EInOutError do
-      begin
-        writeln('Unable to open the file "', FileName, '" for writing. ', E.Message);
-        if not Interactive then
-          Terminate;
-      end
-  end;
-end;
-
-{ Setup the wav file to record text to. }
-procedure TVTVApp.SetupOutputWav(FileName : String);
-begin
-  WriteWav := True;
-  SpFileStream := TSpFileStream.Create;
-  try
-    { Open the wav file. }
-    SpFileStream.OpenStreamWrite(FileName);
-  except
-    on E: EInOutError do
-    begin
-        writeln('Unable to o open the wav file "', FileName, '" for writing. ', E.Message);
-        if not Interactive then
-          Terminate;
-      end;
-  end;
-  SpVoice.AudioOutputStream := SpFileStream;
-end;
-
 { Set the Voice. }
 procedure TVTVApp.SetVoice(NewVoice : String);
 var
@@ -649,13 +659,6 @@ begin
     if not Interactive then
       Terminate;
   end;
-end;
-
-{ Write to the output file. }
-procedure TVTVApp.WriteOutputFile(Text : String);
-begin
-  WriteLn(OutputFile, Text);
-  Flush(OutputFile);
 end;
 
 { ----------========== Speech Methods ==========----- }
@@ -715,13 +718,13 @@ var
   NewWord     : String;
 begin
   { Write the text before making changes for speaking the text. }
-  if WriteText then
+  if OutputWrite then
   begin
-    WriteOutputFile(Text);
+    OutputWriteText(Text);
   end;
 
   { Log the text is requested. }
-  LogWriteOutput(Text);
+  LogWriteText(Text);
 
   { Replace abbreviations before speaking. }
   for AbbrevIndex := 0 to AbbrevList.Count - 1 do
@@ -732,7 +735,7 @@ begin
   end;
 
   { Speak the updated text. }
-  PrintDiagMessage('Speaking: ' + Text);
+  DiagPrintMessage('Speaking: ' + Text);
   SpVoice.Speak(Text);
 end;
 
@@ -764,14 +767,14 @@ begin
   case Command of // Special cases for upper case characters.
     'A'             : HandleCommandAbbrev(Arg);
     'V'             : ListVoices;
-    'O'             : ListOutputs;
+    'O'             : ListAudioOutputs;
     else
       case (LowerCase(Command)) of
               'abbrev'  : HandleCommandAbbrev(Arg);
         'a',  'alias'   : HandleCommandAlias(Arg);
         'd',  'diag'    : HandleCommandDiag(Arg);
         'h',  'help'    : CommandHelp(Arg);
-              'outputs' : ListOutputs;
+              'outputs' : ListAudioOutputs;
         'o',  'output'  : HandleCommandOutput(Arg);
         'p',  'priority': HandleCommandPriority(Arg);
         'q',  'quit'    : Terminate;
@@ -798,7 +801,7 @@ begin
   WriteLn('Text entered will be spoken.');
   WriteLn('Type "/help" for help');
   WriteLn('Type /quit to exit.');
-  if WriteText then
+  if OutputWrite then
     Writeln('Enter "\" to write a blank line to the output file.');
   WriteLn('End a line with "\" to cancel the input.');
 
@@ -811,7 +814,7 @@ begin
       Continue
     else if Text = '\' then
     begin
-      WriteOutputFile('');
+      OutputWriteText('');
       Continue;
     end
     else if Text = '?' then
@@ -871,7 +874,7 @@ begin
       Diagnostic := False;
   end
   else
-    PrintDiagData;
+    DiagPringData;
 end;
 
 procedure TVTVApp.HandleCommandOutput(NewOutput : String);
