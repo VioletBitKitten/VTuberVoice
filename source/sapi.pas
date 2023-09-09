@@ -402,7 +402,7 @@ begin
   end;
 
 { Try a partial name Contains match. }
-  if VoiceID < 1 then
+  if VoiceID < 0 then
   begin
     for VoiceIndex := 0 to Voices.Count - 1 do
       if Voices[VoiceIndex].Contains(VoiceName) then
