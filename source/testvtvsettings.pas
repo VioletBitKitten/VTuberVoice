@@ -106,22 +106,22 @@ begin
   Settings.SaveSettings;
 
   { Check that each of the settings has the right value. }
-  AssertEquals('Setting AudioOutput should equal test value.',  Settings.AudioOutput , TestAudioOutput );
-  AssertEquals('Setting OutputAppend should equal test value.', Settings.OutputAppend, TestOutputAppend);
-  AssertEquals('Setting OutputFile should equal test value.',   Settings.OutputFile  , TestOutputFile  );
-  AssertEquals('Setting Priority should equal test value.',     Settings.Priority    , TestPriority    );
-  AssertEquals('Setting Rate should equal test value.',         Settings.Rate        , TestRate        );
-  AssertEquals('Setting Voice should equal test value.',        Settings.Voice       , TestVoice       );
-  AssertEquals('Setting Volume should equal test value.',       Settings.Volume      , TestVolume      );
-  AssertEquals('Setting BackupCreate should equal test value.', Settings.BackupCreate, TestBackupCreate);
-  AssertEquals('Setting BackupFormat should equal test value.', Settings.BackupFormat, TestBackupFormat);
-  AssertEquals('Setting BackupWhen should equal test value.',   Settings.BackupWhen  , TestBackupWhen  );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.BackupKeep  , TestBackupKeep  );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogDiag     ,TestLogDiag      );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogEnabled  ,TestLogEnabled   );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogFile     ,TestLogFile      );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogFormat   ,TestLogFormat    );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogInput    ,TestLogInput     );
+  AssertEquals('Setting AudioOutput should equal test value.',   TestAudioOutput ,Settings.AudioOutput );
+  AssertEquals('Setting OutputAppend should equal test value.',  TestOutputAppend,Settings.OutputAppend);
+  AssertEquals('Setting OutputFile should equal test value.',    TestOutputFile  ,Settings.OutputFile  );
+  AssertEquals('Setting Priority should equal test value.',      TestPriority    ,Settings.Priority    );
+  AssertEquals('Setting Rate should equal test value.',          TestRate        ,Settings.Rate        );
+  AssertEquals('Setting Voice should equal test value.',         TestVoice       ,Settings.Voice       );
+  AssertEquals('Setting Volume should equal test value.',        TestVolume      ,Settings.Volume      );
+  AssertEquals('Setting BackupCreate should equal test value.',  TestBackupCreate,Settings.BackupCreate);
+  AssertEquals('Setting BackupFormat should equal test value.',  TestBackupFormat,Settings.BackupFormat);
+  AssertEquals('Setting BackupWhen should equal test value.',    TestBackupWhen  ,Settings.BackupWhen  );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestBackupKeep  ,Settings.BackupKeep  );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogDiag     ,Settings.LogDiag     );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogEnabled  ,Settings.LogEnabled  );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogFile     ,Settings.LogFile     );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogFormat   ,Settings.LogFormat   );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogInput    ,Settings.LogInput    );
 
 end;
 
@@ -129,22 +129,22 @@ end;
 procedure TVTVSettingsTest.TestLoadChanges;
 begin
   { Check that each of the settings has the right value. }
-  AssertEquals('Setting AudioOutput should equal test value.',  Settings.AudioOutput , TestAudioOutput );
-  AssertEquals('Setting OutputAppend should equal test value.', Settings.OutputAppend, TestOutputAppend);
-  AssertEquals('Setting OutputFile should equal test value.',   Settings.OutputFile  , TestOutputFile  );
-  AssertEquals('Setting Priority should equal test value.',     Settings.Priority    , TestPriority    );
-  AssertEquals('Setting Rate should equal test value.',         Settings.Rate        , TestRate        );
-  AssertEquals('Setting Voice should equal test value.',        Settings.Voice       , TestVoice       );
-  AssertEquals('Setting Volume should equal test value.',       Settings.Volume      , TestVolume      );
-  AssertEquals('Setting BackupCreate should equal test value.', Settings.BackupCreate, TestBackupCreate);
-  AssertEquals('Setting BackupFormat should equal test value.', Settings.BackupFormat, TestBackupFormat);
-  AssertEquals('Setting BackupWhen should equal test value.',   Settings.BackupWhen  , TestBackupWhen  );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.BackupKeep  , TestBackupKeep  );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogDiag     ,TestLogDiag      );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogEnabled  ,TestLogEnabled   );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogFile     ,TestLogFile      );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogFormat   ,TestLogFormat    );
-  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogInput    ,TestLogInput     );
+  AssertEquals('Setting AudioOutput should equal test value.',   TestAudioOutput ,Settings.AudioOutput );
+  AssertEquals('Setting OutputAppend should equal test value.',  TestOutputAppend,Settings.OutputAppend);
+  AssertEquals('Setting OutputFile should equal test value.',    TestOutputFile  ,Settings.OutputFile  );
+  AssertEquals('Setting Priority should equal test value.',      TestPriority    ,Settings.Priority    );
+  AssertEquals('Setting Rate should equal test value.',          TestRate        ,Settings.Rate        );
+  AssertEquals('Setting Voice should equal test value.',         TestVoice       ,Settings.Voice       );
+  AssertEquals('Setting Volume should equal test value.',        TestVolume      ,Settings.Volume      );
+  AssertEquals('Setting BackupCreate should equal test value.',  TestBackupCreate,Settings.BackupCreate);
+  AssertEquals('Setting BackupFormat should equal test value.',  TestBackupFormat,Settings.BackupFormat);
+  AssertEquals('Setting BackupWhen should equal test value.',    TestBackupWhen  ,Settings.BackupWhen  );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestBackupKeep  ,Settings.BackupKeep  );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogDiag     ,Settings.LogDiag     );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogEnabled  ,Settings.LogEnabled  );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogFile     ,Settings.LogFile     );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogFormat   ,Settings.LogFormat   );
+  AssertEquals('Setting BackupKeep should equal test value.',    TestLogInput    ,Settings.LogInput    );
 
   { Reset BackupCreate so no further backup files are created. }
   Settings.BackupCreate := False;
