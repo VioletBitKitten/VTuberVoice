@@ -348,27 +348,27 @@ begin
 end;
 procedure TVTVSettings.SetLogDiag(NewDiag : Boolean);
 begin
-  FBackupCreate := NewDiag;
+  FLogDiag := NewDiag;
   IniFile.WriteBool('Log', 'Diag', FLogDiag);
 end;
 procedure TVTVSettings.SetLogEnabled(NewEnabled : Boolean);
 begin
-  FBackupCreate := NewEnabled;
+  FLogEnabled := NewEnabled;
   IniFile.WriteBool('Log', 'Enabled', FLogEnabled);
 end;
 procedure TVTVSettings.SetLogFile(NewFile : String);
 begin
-  FBackupFile := NewFile;
+  FLogFile := NewFile;
   IniFile.WriteString('Log', 'File', FLogFile);
 end;
 procedure TVTVSettings.SetLogFormat(NewFormat : String);
 begin
-  FBackupFile := NewFormat;
+  FLogFormat := NewFormat;
   IniFile.WriteString('Log', 'Format', FLogFormat);
 end;
 procedure TVTVSettings.SetLogInput(NewInput : Boolean);
 begin
-  FBackupCreate := NewInput;
+  FLogInput := NewInput;
   IniFile.WriteBool('Log', 'Input', FLogInput);
 end;
 function TVTVSettings.GetAliasList : TStringList;
