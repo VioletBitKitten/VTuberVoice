@@ -41,15 +41,10 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 ## TODO
 
 * Create Unit tests. `In Progress.`
-  * Tests for the `vtvap`p class.
+  * Tests for the `vtvapp` class.
   * Created tests for the `filelist`` Class.
   * Created tests for the `vtvsettings`` class. This could use more work.
 * Add `-C` option to not load a configuration file. Mostly for testing.
-* Write spoken text to a log file.
-  * Configurable timestamp. `Done`
-  * Write spoken text before modification with a timestamp. `Done`
-  * Write a message for startup and shutdown. `Done`
-  * Events to log for a mode verbose mode?
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * Expand the interactive user interface.
   * Add aliases for frequently spoken phrases. `In Progress.`
@@ -80,6 +75,11 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 * For some reason the default output device is not used. Find a way to identify the default audio output device. Backport the change to the SAPI library. Solved this with the mmdeviceapi.pas file.
 * Better handling of writing a blank line to the output file. It is getting messy handling this special case.
 * Cleanup the Variables in TVTVApp. They are a bit of a mess.
+* Write spoken text to a log file.
+  * Configurable timestamp. `Done`
+  * Write spoken text before modification with a timestamp. `Done`
+  * Write a message for startup and shutdown. `Done`
+  * Events to log for a mode verbose mode? `Done`
 
 ## Reference
 

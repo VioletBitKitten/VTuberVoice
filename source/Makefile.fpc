@@ -6,5 +6,5 @@ version=0.00
 targetdir=..
 
 [target]
-units=sapi mmdeviceapi vtvapp vtvsettings vtvhelp filelist testfilelist
+units=sapi mmdeviceapi vtvapp vtvsettings vtvhelp filelist testfilelist vtvlog
 programs=vtv runtests

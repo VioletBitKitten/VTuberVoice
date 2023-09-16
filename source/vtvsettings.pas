@@ -26,9 +26,6 @@ type
     IniFileName : String;
     { General Settings. }
     FGeneralAudioOutput   : String;
-    FGeneralLogFile       : String;
-    FGeneralLogFormat     : String;
-    FGeneralLogOutput     : Boolean;
     FGeneralOutputFile    : String;
     FGeneralOutputAppend  : Boolean;
     FGeneralPriority      : Integer;
@@ -41,6 +38,12 @@ type
     FBackupWhen           : String;
     FBackupKeep           : Integer;
     FBackupFile           : String;
+    { Logging Settings. }
+    FLogDiag              : Boolean;
+    FLogEnabled           : Boolean;
+    FLogFile              : String;
+    FLogFormat            : String;
+    FLogInput             : Boolean;
     { Private Methods }
     procedure CleanBackups;
     procedure CreateBackupFile;
@@ -48,9 +51,7 @@ type
     procedure MaybeBackup;
     { Property Methods }
     procedure SetGeneralAudioOutput(NewOutput : String);
-    procedure SetGeneralLogFile(NewLogFile : String);
-    procedure SetGeneralLogFormat(NewLogFormat : String);
-    procedure SetGeneralLogOutput(NewLogOutput : Boolean);
+
     procedure SetGeneralOutputAppend(NewAppend : Boolean);
     procedure SetGeneralOutputFile(NewFile : String);
     procedure SetGeneralPriority(NewPriority : Integer);
@@ -62,6 +63,11 @@ type
     procedure SetBackupWhen(NewWhen : String);
     procedure SetBackupKeep(NewKeep : Integer);
     procedure SetBackupFile(NewFile : String);
+    procedure SetLogDiag(NewDiag : Boolean);
+    procedure SetLogEnabled(NewEnabled : Boolean);
+    procedure SetLogFile(NewFile : String);
+    procedure SetLogFormat(NewFormat : String);
+    procedure SetLogInput(NewInput : Boolean);
     function GetAbbreviationList : TStringList;
     function GetAliasList : TStringList;
   public
@@ -72,21 +78,24 @@ type
     property FileName     : String  read IniFileName;
     { General Settings }
     property AudioOutput  : String  read FGeneralAudioOutput  write SetGeneralAudioOutput;
-    property LogFile      : String  read FGeneralLogFile      write SetGeneralLogFile;
-    property LogFormat    : String  read FGeneralLogFormat    write SetGeneralLogFormat;
-    property LogOutput    : Boolean read FGeneralLogOutput    write SetGeneralLogOutput;
     property OutputAppend : Boolean read FGeneralOutputAppend write SetGeneralOutputAppend;
     property OutputFile   : String  read FGeneralOutputFile   write SetGeneralOutputFile;
     property Priority     : Integer read FGeneralPriority     write SetGeneralPriority;
     property Rate         : Integer read FGeneralRate         write SetGeneralRate;
     property Voice        : String  read FGeneralVoice        write SetGeneralVoice;
     property Volume       : Integer read FGeneralVolume       write SetGeneralVolume;
-    { Backup File Settings }
+    { Backup Settings }
     property BackupCreate : Boolean read FBackupCreate        write SetBackupCreate;
     property BackupFormat : String  read FBackupFormat        write SetBackupFormat;
     property BackupWhen   : String  read FBackupWhen          write SetBackupWhen;
     property BackupKeep   : Integer read FBackupKeep          write SetBackupKeep;
     property BackupFile   : String  read FBackupFile          write SetBackupFile;
+    { Logging Settings. }
+    property LogDiag       : Boolean read FLogDiag            write SetLogDiag;
+    property LogEnabled    : Boolean read FLogEnabled         write SetLogEnabled;
+    property LogFile       : String  read FLogFile            write SetLogFile;
+    property LogFormat     : String  read FLogFormat          write SetLogFormat;
+    property LogInput      : Boolean read FLogInput           write SetLogInput;
     { Aliases and Abbreviations }
     property Aliases      : TStringList read GetAliasList;
     property Abbreviations: TStringList read GetAbbreviationList;
@@ -97,9 +106,6 @@ implementation
 const
   { Default settings. }
   DefaultGeneralAudioOutput  = '';
-  DefaultGeneralLogFile      = '';
-  DefaultGeneralLogFormat    = 'YYYY-MM-DD-hh:mm:ss.zz';
-  DefaultGeneralLogOutput    = False;
   DefaultGeneralOutputAppend = False;
   DefaultGeneralOutputFile   = '';
   DefaultGeneralPriority     = 0;
@@ -111,8 +117,13 @@ const
   DefaultBackupWhen          = 'Load';
   DefaultBackupKeep          = 20;
   DefaultBackupFile          = '';
+  DefaultLogDiag             = False;
+  DefaultLogEnabled          = False;
+  DefaultLogFile             =  'log.txt';
+  DefaultLogFormat           = 'YYYY-MM-DD-hh:mm:ss.zz';
+  DefaultLogInput            = False;
   { Header for a new INI file. }
-  VTVDefaultINIHeader : Array[1..46] of String = (
+  VTVDefaultINIHeader : Array[1..51] of String = (
     '; Configuration file for VTuberVoice.',
     '; TTS Software for VTubers who don''t or can''t speak.',
     ';',
@@ -128,9 +139,6 @@ const
     '[General]',
     '; General settings.',
     '; AudioOutput = Speakers ; Set the audio output device.',
-    '; LogFile = log.txt ; File to log spoken text to.',
-    '; LogFormat = YYYY-MM-DD-hhmmsszz ; Format for the log entry timestamps.',
-    '; LogOutput = False ; Log all spoken text to a file.',
     '; OutputFile = tts_out.txt ; Set the output file spoken text is written to.',
     '; OutputAppend = 1 ; Append text to the output file, 1 for yes, 0 for no.',
     '; Priority = 0 ; Set the priorty for speech, 0 to 2. Rarely needed.',
@@ -148,6 +156,14 @@ const
     ';    The oldest files will be deleted if there are more than the spcified files.',
     ';    Set to 0 to keep all backup files.',
     '; File = ; Automatically set to the latest backup file.',
+    '[Log]',
+    '; Logging settings.',
+    '; By defauly logs all text spoken along with application startup and shutdown.',
+    '; Diag = False ; Log diagnostic messages. True or False.',
+    '; Enabled = False ; Enable logging. True or False.',
+    '; File = log.txt ; File to log spoken text to.',
+    '; Format = YYYY-MM-DD-hh:mm:ss.zz ; Format for the log entry timestamps.',
+    '; Input = False ; Log user input. True or False.',
     '[Aliases]',
     '; Aliases are a shorthand for longer text.',
     '; To use an Alias enter # followed by the alias name.',
@@ -275,21 +291,6 @@ begin
   FGeneralAudioOutput := NewOutput;
   IniFile.WriteString('General', 'AudioOutput', FGeneralAudioOutput);
 end;
-procedure TVTVSettings.SetGeneralLogFile(NewLogFile : String);
-begin
-  FGeneralLogFile := NewLogFile;
-  IniFile.WriteString('General', 'LogFile', FGeneralLogFile);
-end;
-procedure TVTVSettings.SetGeneralLogFormat(NewLogFormat : String);
-begin
-  FGeneralLogFormat := NewLogFormat;
-  IniFile.WriteString('General', 'LogFormat', FGeneralLogFormat);
-end;
-procedure TVTVSettings.SetGeneralLogOutput(NewLogOutput : Boolean);
-begin
-  FGeneralLogOutput := NewLogOutput;
-  IniFile.WriteBool('General', 'LogOutput', FGeneralLogOutput);
-end;
 procedure TVTVSettings.SetGeneralOutputAppend(Newappend : Boolean);
 begin
   FGeneralOutputAppend := NewAppend;
@@ -344,6 +345,31 @@ procedure TVTVSettings.SetBackupFile(NewFile : String);
 begin
   FBackupFile := NewFile;
   IniFile.WriteString('Backup', 'File', FBackupFile);
+end;
+procedure TVTVSettings.SetLogDiag(NewDiag : Boolean);
+begin
+  FBackupCreate := NewDiag;
+  IniFile.WriteBool('Log', 'Diag', FLogDiag);
+end;
+procedure TVTVSettings.SetLogEnabled(NewEnabled : Boolean);
+begin
+  FBackupCreate := NewEnabled;
+  IniFile.WriteBool('Log', 'Enabled', FLogEnabled);
+end;
+procedure TVTVSettings.SetLogFile(NewFile : String);
+begin
+  FBackupFile := NewFile;
+  IniFile.WriteString('Log', 'File', FLogFile);
+end;
+procedure TVTVSettings.SetLogFormat(NewFormat : String);
+begin
+  FBackupFile := NewFormat;
+  IniFile.WriteString('Log', 'Format', FLogFormat);
+end;
+procedure TVTVSettings.SetLogInput(NewInput : Boolean);
+begin
+  FBackupCreate := NewInput;
+  IniFile.WriteBool('Log', 'Input', FLogInput);
 end;
 function TVTVSettings.GetAliasList : TStringList;
 var
@@ -442,9 +468,6 @@ end;
 procedure TVTVSettings.LoadSettings;
 begin
   FGeneralAudioOutput  := IniFile.ReadString ('General', 'AudioOutput',  DefaultGeneralAudioOutput );
-  FGeneralLogFile      := IniFile.ReadString ('General', 'LogFile',      DefaultGeneralLogFile );
-  FGeneralLogFormat    := IniFile.ReadString ('General', 'LogFormat',    DefaultGeneralLogFormat );
-  FGeneralLogOutput    := IniFile.ReadBool   ('General', 'LogOutput',    DefaultGeneralLogOutput);
   FGeneralOutputAppend := IniFile.ReadBool   ('General', 'OutputAppend', DefaultGeneralOutputAppend);
   FGeneralOutputFile   := IniFile.ReadString ('General', 'OutputFile',   DefaultGeneralOutputFile  );
   FGeneralPriority     := IniFile.ReadInteger('General', 'Priority',     DefaultGeneralPriority    );
@@ -456,6 +479,11 @@ begin
   FBackupWhen          := IniFile.ReadString ('Backup',  'When',         DefaultBackupWhen         );
   FBackupKeep          := IniFile.ReadInteger('Backup',  'Keep',         DefaultBackupKeep         );
   FBackupFile          := IniFile.ReadString ('Backup',  'File',         DefaultBackupFile         );
+  FLogDiag             := IniFile.ReadBool   ('Log',     'Diag',         DefaultLogDiag            );
+  FLogEnabled          := IniFile.ReadBool   ('Log',     'Enabled',      DefaultLogEnabled         );
+  FLogFile             := IniFile.ReadString ('Log',     'File',         DefaultLogFile            );
+  FLogFormat           := IniFile.ReadString ('Log',     'Format',       DefaultLogFormat          );
+  FLogInput            := IniFile.ReadBool   ('Log',     'Input',        DefaultLogInput           );
 end;
 
 { Write settings to an INI file. }
@@ -466,9 +494,6 @@ begin
 
   { Save the settings. }
   IniFile.WriteString ('General', 'AudioOutput',  FGeneralAudioOutput);
-  IniFile.WriteString ('General', 'LogFile',      FGeneralLogFile);
-  IniFile.WriteString ('General', 'LogFormat',    FGeneralLogFormat);
-  IniFile.WriteBool   ('General', 'LogOutput',    FGeneralLogOutput);
   IniFile.WriteBool   ('General', 'OutputAppend', FGeneralOutputAppend);
   IniFile.WriteString ('General', 'OutputFile',   FGeneralOutputFile);
   IniFile.WriteInteger('General', 'Priority',     FGeneralPriority);
@@ -480,6 +505,11 @@ begin
   IniFile.WriteString ('Backup',  'When',         FBackupWhen);
   IniFile.WriteInteger('Backup',  'Keep',         FBackupKeep);
   IniFile.WriteString ('Backup',  'File',         FBackupFile);
+  IniFile.WriteBool   ('Log',     'Diag',         FLogDiag);
+  IniFile.WriteBool   ('Log',     'Enabled',      FLogEnabled);
+  IniFile.WriteString ('Log',     'File',         FLogFile);
+  IniFile.WriteString ('Log',     'Format',       FLogFormat);
+  IniFile.WriteBool   ('Log',     'Input',        FLogInput);
   IniFile.UpdateFile;
 end;
 

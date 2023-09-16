@@ -18,7 +18,7 @@ unit vtvapp;
 interface
 
 uses
-  classes, custapp, sysutils, sapi, vtvsettings, vtvhelp;
+  classes, custapp, sysutils, sapi, vtvsettings, vtvhelp, vtvlog;
 
 type
   TVTVApp = Class(TCustomApplication)
@@ -27,9 +27,7 @@ type
     AliasList       : TStringList;
     Diagnostic      : Boolean;
     Interactive     : Boolean;
-    LogFormat       : String;
-    LogFile         : TextFile;
-    LogWrite        : Boolean;
+    VTVLog          : TVTVLog;
     NonOptions      : TStringList;
     OptionsLong     : TStringList;
     OptionsShort    : String;
@@ -57,8 +55,7 @@ type
     { Helper Methods }
     procedure DiagPringData;
     procedure DiagPrintMessage(Message : String);
-    procedure LogSetup(FileName : String);
-    procedure LogWriteText(Text : String);
+    procedure LogSetup;
     procedure OutputSetup(FileName : String; AppendFile : Boolean);
     procedure OutputWaveSetup(FileName : String);
     procedure OutputWriteText(Text : String);
@@ -97,8 +94,8 @@ implementation
 { Perform cleanup. }
 destructor TVTVApp.Destroy;
 begin
-  LogWriteText('Shutdown of ' + Title);
-  DiagPrintMessage('Shutting down VTuberVoice.');
+  VTVLog.LogMessage('Shutdown of ' + Title);
+  DiagPrintMessage('Shutting down ' + Title);
   DiagPrintMessage('Freeing the Voice object.');
   FreeAndNil(SpVoice);
 
@@ -123,10 +120,10 @@ begin
     CloseFile(OutputFile);
   end;
 
-  if LogWrite then
+  if VTVLog.Enabled then
   begin
     DiagPrintMessage('Closing the log file.');
-    CloseFile(LogFile);
+    FreeAndNil(VTVLog);
   end;
 
   if OutputWaveWrite then
@@ -200,7 +197,6 @@ begin
   OutputFileName := '';
   OutputWrite := False;
   OutputWaveWrite := False;
-  LogWrite := False;
 end;
 
 procedure TVTVApp.LoadSettings;
@@ -221,11 +217,8 @@ begin
   AbbrevList := Settings.Abbreviations;
 
   { Log Settings. }
-  if Settings.LogOutput then
-  begin
-    LogSetup(Settings.LogFile);
-    LogWriteText('Startup of ' + Title);
-  end;
+  LogSetup;
+  VTVLog.LogMessage('Startup of ' + Title);
 end;
 
 { ----------========== Command Line Options ==========----- }
@@ -416,51 +409,27 @@ end;
 { Print a diagnostic message if Diagnostic is true. }
 procedure TVTVApp.DiagPrintMessage(Message : String);
 begin
-if Diagnostic then
-  WriteLn('Diagnostic: ', Message);
+  if Diagnostic then
+    WriteLn('Diagnostic: ', Message);
+  if VTVLog <> Nil then
+    VTVLog.LogDiag(Message);
 end;
 
 { Setup the log file to write spoken text to. }
-procedure TVTVApp.LogSetup(FileName : String);
+procedure TVTVApp.LogSetup;
 begin
-  DiagPrintMessage('Writing output to the log file: ' + FileName);
-  LogWrite := True;
-  LogFormat := Settings.LogFormat;
-  AssignFile(LogFile, FileName);
+  DiagPrintMessage('Writing output to the log file: ' + Settings.LogFile);
   try
-    { Open the file. }
-    if FileExists(FileName) then
-      append(LogFile)
-    else
-      rewrite(LogFile);
+    VTVLog := TVTVLog.Create(Settings);
   except
-    on E: EInOutError do
+    on E: EVTVLogException do
       begin
-        writeln('Unable to open the file "', FileName, '" for writing. ', E.Message);
+        writeln(E.Message);
         if not Interactive then
           Terminate;
       end
   end;
 end;
-
-{ Write text to the log file. }
-procedure TVTVApp.LogWriteText(Text : String);
-var
-  Timestamp : String;
-begin
-  { Do not write to the log if it is not enabled. }
-  if not LogWrite then
-    Exit;
-
-  { Do not bother with empty lines. }
-  if Text = '' then
-    Exit;
-
-  Timestamp := FormatDateTime(LogFormat, Now);
-  WriteLn(LogFile, Timestamp, ': ', Text);
-  Flush(LogFile);
-end;
-
 
 { Setup the file to write text to. }
 procedure TVTVApp.OutputSetup(FileName : String; AppendFile : Boolean);
@@ -722,8 +691,8 @@ begin
     OutputWriteText(Text);
   end;
 
-  { Log the text is requested. }
-  LogWriteText(Text);
+  { Log the text to be spoken. }
+  VTVLog.LogSpeech(Text);
 
   { Replace abbreviations before speaking. }
   for AbbrevIndex := 0 to AbbrevList.Count - 1 do
@@ -809,6 +778,7 @@ begin
   begin
     Write('/help > ');
     ReadLn(Text);
+    VTVLog.LogInput(Text);
     if Length(Text) = 0 then
       Continue
     else if Text = '\' then
