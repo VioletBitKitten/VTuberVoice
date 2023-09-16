@@ -33,6 +33,11 @@ const
   TestBackupFormat  = 'YYYY-MM-DD';
   TestBackupWhen    = 'Load';
   TestBackupKeep    = 1;
+  TestLogDiag       = False;
+  TestLogEnabled    = False;
+  TestLogFile       =  'log.txt';
+  TestLogFormat     = 'YYYY-MM-DD-hh:mm:ss.zz';
+  TestLogInput      = False;
 
 type
   TVTVSettingsTest = class(TTestCase)
@@ -112,6 +117,12 @@ begin
   AssertEquals('Setting BackupFormat should equal test value.', Settings.BackupFormat, TestBackupFormat);
   AssertEquals('Setting BackupWhen should equal test value.',   Settings.BackupWhen  , TestBackupWhen  );
   AssertEquals('Setting BackupKeep should equal test value.',   Settings.BackupKeep  , TestBackupKeep  );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogDiag     ,TestLogDiag      );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogEnabled  ,TestLogEnabled   );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogFile     ,TestLogFile      );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogFormat   ,TestLogFormat    );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogInput    ,TestLogInput     );
+
 end;
 
 { Load the settings and make sure they have the right values.}
@@ -129,6 +140,11 @@ begin
   AssertEquals('Setting BackupFormat should equal test value.', Settings.BackupFormat, TestBackupFormat);
   AssertEquals('Setting BackupWhen should equal test value.',   Settings.BackupWhen  , TestBackupWhen  );
   AssertEquals('Setting BackupKeep should equal test value.',   Settings.BackupKeep  , TestBackupKeep  );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogDiag     ,TestLogDiag      );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogEnabled  ,TestLogEnabled   );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogFile     ,TestLogFile      );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogFormat   ,TestLogFormat    );
+  AssertEquals('Setting BackupKeep should equal test value.',   Settings.LogInput    ,TestLogInput     );
 
   { Reset BackupCreate so no further backup files are created. }
   Settings.BackupCreate := False;
