@@ -14,7 +14,7 @@
 program runtests;
 
 uses
-  fpcunit, testregistry, consoletestrunner, testfilelist, testvtvsettings;
+  fpcunit, testregistry, consoletestrunner, testfilelist, testvtvsettings, testvtvlog;
 
 Var
   Application : TTestRunner;
