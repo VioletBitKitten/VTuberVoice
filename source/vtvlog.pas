@@ -10,6 +10,13 @@
   Distributed under the MIT license. Please see the file LICENSE.
 }
 
+{
+  TODO:
+    Change the log file from TextFile to a stream.
+    Provide a method to return the stream object.
+    This will make the test for this unit cleaner.
+}
+
 { Modern Pascal Directives }
 {$mode objfpc}{$H+}{$J-}
 
@@ -19,6 +26,13 @@ interface
 
 uses
   sysutils, classes, vtvsettings;
+
+{ Prefixed for the various log messages.}
+const
+  VTVLogDiagPrefix    = ' (Diag): ';
+  VTVLogInputPrefix   = ' (Input): ';
+  VTVLogSpeechPrefix  = ' (Speech): ';
+  VTVLogMessagePrefix = ': ';
 
 type
   TVTVLog = class
@@ -95,7 +109,7 @@ begin
   if not FLogDiag then
     Exit;
   Timestamp := FormatDateTime(FLogFormat, Now);
-  WriteLn(FLogTextFile, Timestamp, ' (Diag): ', Text);
+  WriteLn(FLogTextFile, Timestamp, VTVLogDiagPrefix, Text);
   Flush(FLogTextFile);
 end;
 
@@ -109,7 +123,7 @@ begin
   if not FLogInput then
     Exit;
   Timestamp := FormatDateTime(FLogFormat, Now);
-  WriteLn(FLogTextFile, Timestamp, ' (Input): ', Text);
+  WriteLn(FLogTextFile, Timestamp, VTVLogInputPrefix, Text);
   Flush(FLogTextFile);
 end;
 
@@ -121,7 +135,7 @@ begin
   if not FLogEnabled then
     Exit;
   Timestamp := FormatDateTime(FLogFormat, Now);
-  WriteLn(FLogTextFile, Timestamp, ' (Speech): ', Text);
+  WriteLn(FLogTextFile, Timestamp, VTVLogSpeechPrefix, Text);
   Flush(FLogTextFile);
 end;
 
@@ -133,7 +147,7 @@ begin
   if not FLogEnabled then
     Exit;
   Timestamp := FormatDateTime(FLogFormat, Now);
-  WriteLn(FLogTextFile, Timestamp, ': ', Text);
+  WriteLn(FLogTextFile, Timestamp, VTVLogMessagePrefix, Text);
   Flush(FLogTextFile);
 end;
 
