@@ -1,5 +1,12 @@
 # VTuberVoice
 
+[![FreePascal](https://img.shields.io/badge/FreePascal-3.2.2-blue?logo=lazarus)](https://www.freepascal.org/)
+[![Github: VioletBitKitten - VTuberVoice](https://img.shields.io/github/license/VioletBitKitten/VTuberVoice)](https://github.com/VioletBitKitten/VTuberVoice/blob/main/LICENSE)
+[![Github: VioletBitKitten - VTuberVoice](https://img.shields.io/github/last-commit/VioletBitKitten/VTuberVoice/main)](https://github.com/VioletBitKitten/VTuberVoice/commits/main)
+[![Github: VioletBitKitten - VTuberVoice](https://img.shields.io/github/issues/VioletBitKitten/VTuberVoice)](https://github.com/VioletBitKitten/VTuberVoice/issues)
+[![Github: VioletBitKitten - VTuberVoice](https://img.shields.io/github/stars/VioletBitKitten/VTuberVoice)](https://github.com/VioletBitKitten/VTuberVoice)
+[![Twitter: VioletBitKitten](https://img.shields.io/twitter/follow/violetbitkitten?style=social)](https://twitter.com/violetbitkitten)
+
 TTS Software for VTubers who don't or can't speak.
 
 ## WARNING
@@ -29,14 +36,19 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 * `Build VTuberVoice` - Build VTuberVoice using the `build.bat` file.
 * `Clean VTuberVoice` - Clean the compiled binaries using the `build.bat` file.
 * `Test VTuberVoice` - Build and run the Unit tests using the `build.bat` file.
+  This does a clean, a full build then runs the `runtests.exe` program.
 * `fpc: Build Debug` - Build VTuberVoice directly with the FPC compiler with debug options.
 * `fpc: Build Release` - Build VTuberVoice directly with the FPC compiler with release options.
-* `fpc: Syntax Check` - Build VTuberVoice directly with the FPC compiler but do not generate `vtv.exe`. Just for checking syntax.
+* `fpc: Syntax Check` - Build VTuberVoice directly with the FPC compiler but do not generate `vtv.exe`.
+ Just for checking syntax.
 * `fpc: Build Unit Tests` - Build the VTuberVoice tests directly with the FPC compiler.
 * `fpc: Execute Binary` - Run the `vtv.exe` program.
-* `fpc: Create Build Folder` - Create the `out/`` directory for binaries. Called by build commands.
-* `fpc: Remove Build Files` - Delete the `/out` directory and the `vtv.exe` program.
-* `fpc: Execute Test` - Execute the tests.
+  First runs the build task `fpc: Build Release`.
+* `fpc: Create Build Folder` - Create the `out/` directory for binaries.
+  Called by other `fpc:` build commands.
+* `fpc: Remove Build Files` - Delete the `/out` directory, intermediate build files along with the `vtv.exe` and `runtests.exe` programs.
+* `fpc: Execute Test` - Execute the tests by running the `runtests.exe` program.
+  First runs the build task `fpc: Build Unit Tests`.
 
 ## TODO
 
