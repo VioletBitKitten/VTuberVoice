@@ -40,7 +40,7 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 * `fpc: Build Debug` - Build VTuberVoice directly with the FPC compiler with debug options.
 * `fpc: Build Release` - Build VTuberVoice directly with the FPC compiler with release options.
 * `fpc: Syntax Check` - Build VTuberVoice directly with the FPC compiler but do not generate `vtv.exe`.
- Just for checking syntax.
+ Builds the current file. Just for checking syntax.
 * `fpc: Build Unit Tests` - Build the VTuberVoice tests directly with the FPC compiler.
 * `fpc: Execute Binary` - Run the `vtv.exe` program.
   First runs the build task `fpc: Build Release`.
@@ -54,8 +54,8 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 
 * Create Unit tests. `In Progress.`
   * Tests for the `vtvapp` class.
-  * Created tests for the `filelist`` Class.
-  * Created tests for the `vtvsettings`` class. This could use more work.
+  * Created tests for the `filelist` Class.
+  * Created tests for the `vtvsettings` class. This could use more work.
 * Add `-C` option to not load a configuration file. Mostly for testing.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * Expand the interactive user interface.
