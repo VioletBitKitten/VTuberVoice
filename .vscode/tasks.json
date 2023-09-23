@@ -133,7 +133,8 @@
             "dependsOn": ["fpc: Create Build Folder"],
             "command": "${config:FPC_COMMAND}",
             "args": [
-                "${config:PROJECTFILE}", // main project file
+                //"${config:PROJECTFILE}", // main project file
+                "${relativeFile}",
                 "${config:PROCESSOR}", // target processor
                 "${config:SYNTAX}", // pascal syntax mode
                 "-Se99", // maximum error found
@@ -264,7 +265,8 @@
                 "-rf", // remove them all!
                 "${config:OUTPUTDIR}/*.*", // Build files.
                 "${config:OUTPUTDIR}", // Output Directory.
-                "${config:PROJECTEXECUTABLE}" // Binary file.
+                "${config:PROJECTEXECUTABLE}", // Binary file.
+                "${config:TESTEXECUTABLE}" // Tests file.
             ],
             "presentation": {
                 "reveal": "silent"
