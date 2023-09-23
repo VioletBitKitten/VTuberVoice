@@ -5,8 +5,7 @@
 [![Github: VioletBitKitten - VTuberVoice](https://img.shields.io/github/last-commit/VioletBitKitten/VTuberVoice/main)](https://github.com/VioletBitKitten/VTuberVoice/commits/main)
 [![Github: VioletBitKitten - VTuberVoice](https://img.shields.io/github/issues/VioletBitKitten/VTuberVoice)](https://github.com/VioletBitKitten/VTuberVoice/issues)
 [![Github: VioletBitKitten - VTuberVoice](https://img.shields.io/github/stars/VioletBitKitten/VTuberVoice)](https://github.com/VioletBitKitten/VTuberVoice)
-[![Discord](https://img.shields.io/discord/1144984263347929098?label=Discord
-)](https://discord.gg/4ZQuQFEYht)
+[![Discord](https://img.shields.io/discord/1144984263347929098?label=Discord)](https://discord.gg/4ZQuQFEYht)
 
 [![Twitter: VioletBitKitten](https://img.shields.io/twitter/follow/violetbitkitten?style=social)](https://twitter.com/violetbitkitten)
 
