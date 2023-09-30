@@ -95,7 +95,8 @@ implementation
 { Perform cleanup. }
 destructor TVTVApp.Destroy;
 begin
-  VTVLog.LogMessage('Shutdown of ' + Title);
+  if VTVLog <> nil then
+    VTVLog.LogMessage('Shutdown of ' + Title);
   DiagPrintMessage('Shutting down ' + Title);
   DiagPrintMessage('Freeing the Voice object.');
   FreeAndNil(SpVoice);
@@ -121,7 +122,7 @@ begin
     CloseFile(OutputFile);
   end;
 
-  if VTVLog.Enabled then
+  if (VTVLog <> Nil) and (VTVLog.Enabled) then
   begin
     DiagPrintMessage('Closing the log file.');
     FreeAndNil(VTVLog);
@@ -264,6 +265,12 @@ begin
     Exit;
   end;
 
+  { Enable diagnostic mode. }
+  if HasOption('D', 'diag') then
+  begin
+    Diagnostic := True;
+  end;
+
   { These options will always exit the program immediately. }
 
   { List the available Audio Outputs. }
@@ -283,12 +290,6 @@ begin
   end;
 
   { Settings that affect the program. }
-
-  { Enable diagnostic mode. }
-  if HasOption('D', 'diag') then
-  begin
-    Diagnostic := True;
-  end;
 
   { Override the configuration file. }
   if HasOption('c', 'config') then

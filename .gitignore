@@ -4,8 +4,9 @@
 *.ppu
 *.swp
 fpcmade.*
+log.txt
 Makefile
 out
+output.txt
 scratch
 units
-log.txt

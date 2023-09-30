@@ -52,6 +52,8 @@ REM Cleanup build artifacts, including the Makefile.
     make distclean
     DEL Makefile
     cd ..
+    REM Remove the testing output file.
+    DEL output.txt
     EXIT /b
 
 REM Show some help text.
