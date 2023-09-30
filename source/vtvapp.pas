@@ -139,22 +139,34 @@ end;
 { Run the application. }
 procedure TVTVApp.DoRun;
 begin
+  { Process the command line options that need to be handles first. }
   OptionsProcess;
   if Terminated then Exit;
+
+  { Load the configuration file. }
   if LoadConfig then
   begin
+    { Load the configuration file. }
     Settings := TVTVSettings.Create(SettingsFile);
     LoadSettings;
   end
   else
   begin
+    { Fake some objects with no configuration. }
     VTVLog := TVTVLog.Create(Nil);
+    AbbrevList := TStringList.create;
+    AliasList := TStringList.create;
   end;
+  { Process the command line options that change settings. }
   OptionsProcessSettings;
   if Terminated then Exit;
   if Diagnostic then
     DiagPringData;
+
+  { Process the command line options that trigger a speech actions. }
   OptionsProcessSpeech;
+
+  { Enter the interactive loop. }
   if not Terminated then
   begin
     DiagPrintMessage('Entering Read/Speak loop.');
