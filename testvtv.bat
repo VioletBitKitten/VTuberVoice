@@ -27,110 +27,64 @@ IF EXIST "%OUTPUTFILE%" (
     DEL "%OUTPUTFILE%"
 )
 
-REM Print the help text.
-CALL :OutputString "Generating help text to check %APPNAME% starts successfully..."
-vtv -h >> %OUTPUTFILE% 2>&1
-if %ERRORLEVEL% equ 0 (
-    CALL :OutputString "SUCCEEEDED"
-) else (
-    CALL :OutputString "Failed to run the program."
-    GOTO exitscript
-)
-CALL :OutputString
+CALL :RunTest ^
+    "Generating help text to check %APPNAME% starts successfully..." ^
+    "vtv -h >> %OUTPUTFILE% 2>&1"
 
-REM Run interactive mode.
-CALL :OutputString "Checking %APPNAME% interactive mode starts successfully..."
-ECHO /q | vtv >> %OUTPUTFILE% 2>&1
-if %ERRORLEVEL% equ 0 (
-    CALL :OutputString "SUCCEEEDED"
-) else (
-    CALL :OutputString "Failed to start %APPNAME% interactive mdoe."
-    GOTO exitscript
-)
-CALL :OutputString
+CALL :RunTest ^
+    "Checking %APPNAME% interactive mode starts successfully..." ^
+    "ECHO /q | vtv >> %OUTPUTFILE% 2>&1"
 
-REM Run without a configuration file..
-CALL :OutputString "Runnin %APPNAME% with no configuration file..."
-vtv -h >> %OUTPUTFILE% 2>&1
-if %ERRORLEVEL% equ 0 (
-    CALL :OutputString "SUCCEEEDED"
-) else (
-    CALL :OutputString "Failed to run without configuration."
-    GOTO exitscript
-)
-CALL :OutputString
+CALL :RunTest ^
+    "Runnin %APPNAME% with no configuration file..." ^
+    "vtv -h >> %OUTPUTFILE% 2>&1"
 
+CALL :RunTest ^
+    "Listing available Audio Output Devices..." ^
+    "vtv -V >> %OUTPUTFILE% 2>&1"
 
-REM List available Audio Outputs.
-CALL :OutputString "Listing available Audio Output Devices..."
-vtv -V >> %OUTPUTFILE% 2>&1
-if %ERRORLEVEL% equ 0 (
-    CALL :OutputString "SUCCEEEDED"
-) else (
-    CALL :OutputString "Failed to list Audio Output Devices."
-    GOTO exitscript
-)
-CALL :OutputString
+CALL :RunTest ^
+    "Listing available Audio Output Devices in interactive mode..." ^
+    "vtv < testfiles/interactiveoutputs.txt >> %OUTPUTFILE% 2>&1"
 
-REM List available Audio Outputs interactively.
-CALL :OutputString "Listing available Audio Output Devices in interactive mode..."
-vtv < testfiles/interactiveoutputs.txt >> %OUTPUTFILE% 2>&1
-if %ERRORLEVEL% equ 0 (
-    CALL :OutputString "SUCCEEEDED"
-) else (
-    CALL :OutputString "Failed to list Audio Output Devices."
-    GOTO exitscript
-)
-CALL :OutputString
+CALL :RunTest ^
+    "Listing available Voices..." ^
+    "vtv -V >> %OUTPUTFILE% 2>&1"
 
-REM List available voices.
-CALL :OutputString "Listing available Voices..."
-vtv -V >> %OUTPUTFILE% 2>&1
-if %ERRORLEVEL% equ 0 (
-    CALL :OutputString "SUCCEEEDED"
-) else (
-    CALL :OutputString "Failed to list voices."
-    GOTO exitscript
-)
-CALL :OutputString
+CALL :RunTest ^
+    "Listing available Voices in interactive mode..." ^
+    "vtv < testfiles/interactivevoices.txt >> %OUTPUTFILE% 2>&1"
 
-REM List available Vices interactively.
-CALL :OutputString "Listing available Voices in interactive mode..."
-vtv < testfiles/interactivevoices.txt >> %OUTPUTFILE% 2>&1
-if %ERRORLEVEL% equ 0 (
-    CALL :OutputString "SUCCEEEDED"
-) else (
-    CALL :OutputString "Failed to list Voices."
-    GOTO exitscript
-)
-CALL :OutputString
+CALL :RunTest ^
+    "Speaking text from the command line..." ^
+    "vtv Testing >> %OUTPUTFILE% 2>&1"
 
-REM Speak some text from the command line.
-CALL :OutputString "Speaking text from the command line..."
-CALL :OutputString "You may not hear anything depending on your settings."
-vtv "Speaking text from the command line." >> %OUTPUTFILE% 2>&1
-if %ERRORLEVEL% equ 0 (
-    CALL :OutputString "SUCCEEEDED"
-) else (
-    CALL :OutputString "Failed to speak text."
-    GOTO exitscript
-)
-CALL :OutputString
+CALL :RunTest ^
+    "Speaking text from a file from the command line..." ^
+    "vtv -f testfiles/commandlinespeech.txt >> %OUTPUTFILE% 2>&1"
 
-REM Speak text in interactive mode.
-CALL :OutputString "Speaking text in interactive mode..."
-vtv.exe < testfiles/interactivespeech.txt >> %OUTPUTFILE% 2>&1
-if %ERRORLEVEL% equ 0 (
-    CALL :OutputString "SUCCEEEDED"
-) else (
-    CALL :OutputString "Failed to speak text in interactive mode."
-    GOTO exitscript
-)
-CALL :OutputString
+CALL :RunTest ^
+    "Speaking text in interactive mode..." ^
+    "vtv.exe < testfiles/interactivespeech.txt >> %OUTPUTFILE% 2>&1"
 
 REM Finished with tests.
 CALL :OutputString "Testing successful."
 GOTO :exitscript
+
+REM Run a test.
+REM %1 = The string to print.
+REM %2 = The test to run.
+:RunTest
+    CALL :OutputString "%~1%"
+    %~2
+    if %ERRORLEVEL% equ 0 (
+        CALL :OutputString "SUCCEEEDED"
+    ) else (
+        CALL :OutputString "FAILED"
+        GOTO exitscript
+    )
+    CALL :OutputString
+    EXIT /b
 
 REM Write a string to STDOUT and the log file.
 :OutputString
