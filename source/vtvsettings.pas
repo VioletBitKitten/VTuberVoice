@@ -22,8 +22,8 @@ type
   TVTVSettings = class
   private
     { INI file settings. }
-    IniFile     : TIniFile;
-    IniFileName : String;
+    IniFile               : TMemIniFile;
+    IniFileName           : String;
     { General Settings. }
     FGeneralAudioOutput   : String;
     FGeneralOutputFile    : String;
@@ -51,7 +51,6 @@ type
     procedure MaybeBackup;
     { Property Methods }
     procedure SetGeneralAudioOutput(NewOutput : String);
-
     procedure SetGeneralOutputAppend(NewAppend : Boolean);
     procedure SetGeneralOutputFile(NewFile : String);
     procedure SetGeneralPriority(NewPriority : Integer);
@@ -433,7 +432,7 @@ begin
   end;
 
   { Create the INI Object. Cache objects by default. }
-  IniFile := TIniFile.Create(IniFileName);
+  IniFile := TMemIniFile.Create(IniFileName);
   IniFile.CacheUpdates := True;
 
   { Set some options to make the INI files more friendly. }
