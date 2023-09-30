@@ -58,7 +58,8 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
   * Tests for the `vtvapp` class.
   * Created tests for the `filelist` Class.
   * Created tests for the `vtvsettings` class. This could use more work.
-* Add `-C` option to not load a configuration file. Mostly for testing.
+* Add a command to reload settings from the configuration file.
+  * Will require reworkin how settings are reloaded. Close files, reset the log.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * Expand the interactive user interface.
   * Add aliases for frequently spoken phrases. `In Progress.`
@@ -94,6 +95,7 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
   * Write spoken text before modification with a timestamp. `Done`
   * Write a message for startup and shutdown. `Done`
   * Events to log for a mode verbose mode? `Done`
+* Add `-C` option to not load a configuration file. Mostly for testing.
 
 ## Reference
 

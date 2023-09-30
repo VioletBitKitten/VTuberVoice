@@ -64,6 +64,9 @@ implementation
 { Create the log object. }
 constructor TVTVLog.Create(Settings : TVTVSettings);
 begin
+  if Settings = Nil then
+    Exit;
+
   { Copy the settings to the private variables. }
   FLogDiag      := Settings.LogDiag;
   FLogEnabled   := Settings.LogEnabled;

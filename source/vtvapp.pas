@@ -27,6 +27,7 @@ type
     AliasList       : TStringList;
     Diagnostic      : Boolean;
     Interactive     : Boolean;
+    LoadConfig      : Boolean;
     VTVLog          : TVTVLog;
     NonOptions      : TStringList;
     OptionsLong     : TStringList;
@@ -140,8 +141,15 @@ procedure TVTVApp.DoRun;
 begin
   OptionsProcess;
   if Terminated then Exit;
-  Settings := TVTVSettings.Create(SettingsFile);
-  LoadSettings;
+  if LoadConfig then
+  begin
+    Settings := TVTVSettings.Create(SettingsFile);
+    LoadSettings;
+  end
+  else
+  begin
+    VTVLog := TVTVLog.Create(Nil);
+  end;
   OptionsProcessSettings;
   if Terminated then Exit;
   if Diagnostic then
@@ -167,6 +175,7 @@ begin
   WriteLn('Options:');
   WriteLn('  -a , --append             Append text when writing text to a file.');
   WriteLn('  -c , --config=FILE        Use the specificed file for the configuration.');
+  WriteLn('  -C , --noconfig           Do not load the configuration file.');
   WriteLn('  -D , --diag               Print out diagnostic information.');
   WriteLn('  -f , --speak-file         Speak the contents of a text file.');
   WriteLn('  -h , --help               Prints this help.');
@@ -189,14 +198,15 @@ end;
 procedure TVTVApp.Initialize;
 begin
   OptionsSetup;
-  SpVoice := TSpVoice.Create;
-  SpVoice.ExceptionsEnabled := True;
   Diagnostic := False;
   Interactive := False;
-  SettingsFile := '';
+  LoadConfig := True;
   OutputFileName := '';
-  OutputWrite := False;
   OutputWaveWrite := False;
+  OutputWrite := False;
+  SettingsFile := '';
+  SpVoice := TSpVoice.Create;
+  SpVoice.ExceptionsEnabled := True;
 end;
 
 procedure TVTVApp.LoadSettings;
@@ -272,6 +282,12 @@ begin
   if HasOption('c', 'config') then
   begin
     SettingsFile := GetOptionValue('c', 'config')
+  end;
+
+  { Do not load the configuration file. }
+  if HasOption('C', 'noconfig') then
+  begin
+    LoadConfig := False;
   end;
 end;
 
@@ -361,12 +377,13 @@ end;
 { Setup the command line options. }
 procedure TVTVApp.OptionsSetup;
 begin
-  OptionsShort := 'ac:Df:hl:Oo:p:r:Vv:w:W:';
+  OptionsShort := 'aCc:Df:hl:Oo:p:r:Vv:w:W:';
   OptionsLong := TStringList.Create;
   OptionsLong.Add('help');
   OptionsLong.Add('append');
   OptionsLong.Add('config:');
   OptionsLong.Add('diag');
+  OptionsLong.Add('noconfig');
   OptionsLong.Add('output:');
   OptionsLong.Add('outputs');
   OptionsLong.Add('priority:');
@@ -860,7 +877,8 @@ begin
     SetAudioOutput(NewOutput);
     CurrentOutput := SpVoice.AudioOutput;
     {$warn 6058 off} // Stop the annoying "marked as inline is not inlined" errors.
-    Settings.AudioOutput := CurrentOutput.GetDescription;
+    if Settings <> Nil then
+      Settings.AudioOutput := CurrentOutput.GetDescription;
   end;
 end;
 
@@ -873,7 +891,8 @@ begin
   else
   begin
     SetPriority(NewPriority);
-    Settings.Priority := SpVoice.Priority;
+    if Settings <> Nil then
+      Settings.Priority := SpVoice.Priority;
   end;
 end;
 
@@ -893,7 +912,8 @@ end;
 procedure TVTVApp.HandleCommandSaveSettings;
 begin
   WriteLn('Saving settings...');
-  Settings.SaveSettings;
+  if Settings <> Nil then
+    Settings.SaveSettings;
 end;
 
 procedure TVTVApp.HandleCommandVoice(NewVoice : String);
@@ -910,7 +930,8 @@ begin
     SetVoice(NewVoice);
     CurrentVoice := SpVoice.Voice;
     {$warn 6058 off} // Stop the annoying "marked as inline is not inlined" errors.
-    Settings.Voice := CurrentVoice.GetDescription;
+    if Settings <> Nil then
+      Settings.Voice := CurrentVoice.GetDescription;
   end;
 end;
 
@@ -923,7 +944,8 @@ begin
   else
   begin
     SetVolume(NewVolume);
-    Settings.Volume := SpVoice.Volume;
+    if Settings <> Nil then
+      Settings.Volume := SpVoice.Volume;
   end;
 end;
 
