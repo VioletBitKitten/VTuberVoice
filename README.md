@@ -13,25 +13,30 @@ TTS Software for VTubers who don't or can't speak.
 
 ## WARNING
 
-This software is in development. The software is not complete and there is no documentation yet. Use with caution!
+VTuberVoice is in development. The software is not complete and there is no documentation yet. Use with caution!
 
 ## Introduction
 
 Provides a simple command line TTS interface with customization. Currently only works on Windows.
 
-This software was created because I do not like to talk, and at times I am unable to speak.
+VTuberVoice was created because I do not like to talk, and at times I am unable to speak. I was unable to find a good existing solution to TTS that is easy to use while streaming. VTuberVoice provides a simple text interface that can be run in command window.
 
-**Please note** Sometimes Windows is odd and will pick an Audio Output that is not the default. If there is no audio when speaking, try setting an Audio Output using the options `-O` to list Audio Outputs and `-o` to set an Audio Output.
+**Please note** VTuberVoice attempts to pick the default Audio Output Device. If there is no audio when speaking, try setting an Audio Output Device using the options `-O` to list Audio Output DEvices and `-o` to set an Audio Output Device.
 
 ## Building
 
-To build this project use the script `build.bat`.
-For help in the build scripts run the command `build.bat help`.
+The best way to build VTuberVoice is using the `build.bat` file:
 
-To Manually build this project:
+* To build VTuberVoice use the script: `build.bat`
+* For help in the build scripts run the command: `build.bat help`
+* The unit tests can be run using the command: `build.bat help`
+* Application test can be run using the command: `testvtv.bat`
 
-* Run the command `fpcmake` to create the file `Makefile`.
-* Run the command `make` to build the project.
+To Manually build VTuberVoice:
+
+* To create the `Makefile` use the command: `fpcmake`
+* To build VTuberVoice use the command: `make`
+* To run the unit tests use the command: `runtests.exe`
 
 If you are using [Visual Studio Code](https://code.visualstudio.com/) there are build tasks that can be used. The `fpc:` tasks will be faster since FPC compiler is being called directly. The `build.bat` tasks will be slower since they use `fpmake` and `make`.
 
@@ -59,7 +64,7 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
   * Created tests for the `filelist` Class.
   * Created tests for the `vtvsettings` class. This could use more work.
 * Add a command to reload settings from the configuration file.
-  * Will require reworkin how settings are reloaded. Close files, reset the log.
+  * Will require reworking how settings are reloaded. Close files, reset the log.
 * Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * Expand the interactive user interface.
   * Add aliases for frequently spoken phrases. `In Progress.`
@@ -99,8 +104,11 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/) there are 
 
 ## Reference
 
-* FreePascal SAPI library used to interface with with Microsoft SAPI speech library.\
+* FreePascal SAPI library used to interface with with Microsoft SAPI speech library. \
   <https://github.com/VioletBitKitten/SAPI>
+
+* VTuberVoice loosely follows Dephi Style Guide. \
+  <https://wiki.delphi-jedi.org/wiki/Project_JEDI_Delphi_Language_Style_Guide>
 
 ## Copyright and License
 
