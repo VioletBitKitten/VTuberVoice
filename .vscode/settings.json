@@ -1,12 +1,18 @@
 {
     "cSpell.words": [
+        "filelist",
         "fpcmake",
+        "mmdeviceapi",
+        "runtests",
         "SAPI",
         "SpVoice",
         "SSFM",
         "SVSF",
+        "testvtv",
         "Tstring",
-        "Vocie"
+        "Vocie",
+        "vtvapp",
+        "vtvsettings"
     ],
     "cSpell.ignorePaths": [
         "source/Makefile.fpc",
