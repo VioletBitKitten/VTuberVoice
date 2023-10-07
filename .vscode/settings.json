@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "Dephi",
         "filelist",
         "fpcmake",
         "mmdeviceapi",
@@ -10,8 +11,10 @@
         "SVSF",
         "testvtv",
         "Tstring",
+        "TVTVApp",
         "Vocie",
         "vtvapp",
+        "vtvlog",
         "vtvsettings"
     ],
     "cSpell.ignorePaths": [
