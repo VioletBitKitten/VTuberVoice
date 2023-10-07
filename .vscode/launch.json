@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Native Debug",
+            "type": "gdb",
+            "request": "launch",
+            "target": "vtv.exe",
+            "cwd": "${workspaceRoot}",
+            // "valuesFormatting": "parseText",
+            // Without this setting GDB fails with the following error:
+            // ../../gdb-7.2/gdb/printcmd.c:1916: internal-error: clear_dangling_display_expressions: Assertion `objfile->pspace == solib->pspace' failed.
+            // See: https://wiki.lazarus.freepascal.org/GDB_Debugger_Tips#internal-error:_clear_dangling_display_expressions
+            "debugger_args" : ["-ex", "set auto-solib-add off"],
+            "terminal": "", // Open VTuberVoice in a terminal.
+            "preLaunchTask": "fpc: Build Debug" // Do a fresh build with debug enabled.
+        },
+        {
+            "name": "GDB Debugger - Beyond",
+            "type": "by-gdb",
+            "request": "launch",
+            "program": "vtv.exe",
+            "cwd": "${workspaceRoot}",
+            // Without this setting GDB fails with the following error:
+            // ../../gdb-7.2/gdb/printcmd.c:1916: internal-error: clear_dangling_display_expressions: Assertion `objfile->pspace == solib->pspace' failed.
+            // See: https://wiki.lazarus.freepascal.org/GDB_Debugger_Tips#internal-error:_clear_dangling_display_expressions
+            "commandsBeforeExec": [
+                "set auto-solib-add off"
+            ],
+            "preLaunchTask": "fpc: Build Debug" // Do a fresh build with debug enabled.
+        }
+    ]
+}

@@ -29,7 +29,7 @@
     "FPC_COMMAND": "fpc",
     "OUTPUT_BINARY": "${workspaceFolder}",
     "OUTPUTDIR": "out",
-    "PROCESSOR": "-Px86_64",
+    "PROCESSOR": "-Pi386", // I can't get GDB to work with "x86_64".
     "PROJECTEXECUTABLE": "${workspaceFolder}/vtv.exe",
     "PROJECTFILE": "source/vtv.pas", // "${relativeFile}",
     "TESTEXECUTABLE": "${workspaceFolder}/runtests.exe",

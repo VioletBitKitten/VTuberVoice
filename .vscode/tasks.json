@@ -53,7 +53,7 @@
                 "-g", // debug info
                 "-B", // rebuild all units
                 "-v", // verbose message
-                "-gw", // dwarf debug setting
+                "-gw3", // dwarf debug setting
                 "-godwarfsets", // dwarf mode setting
                 "-Fi${config:SOURCEDIR}", // Include files from the source directory.
                 "-FE${config:OUTPUT_BINARY}", // output for binary
@@ -181,7 +181,7 @@
                 "-B", // rebuild all units
                 "-v", // verbose message
                 "-g", // debug info
-                "-gw", // dwarf debug setting
+                "-gw3", // dwarf debug setting
                 "-godwarfsets", // dwarf mode setting
                 "-Fi${config:SOURCEDIR}", // Include files from the source directory.
                 "-FE${config:OUTPUT_BINARY}", // output for binary
