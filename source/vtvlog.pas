@@ -65,7 +65,10 @@ implementation
 constructor TVTVLog.Create(Settings : TVTVSettings);
 begin
   if Settings = Nil then
+  begin
+    FLogEnabled := False;
     Exit;
+  end;
 
   { Copy the settings to the private variables. }
   FLogDiag      := Settings.LogDiag;
