@@ -95,8 +95,7 @@ implementation
 { Perform cleanup. }
 destructor TVTVApp.Destroy;
 begin
-  if VTVLog <> nil then
-    VTVLog.LogMessage('Shutdown of ' + Title);
+  VTVLog.LogMessage('Shutdown of ' + Title);
   DiagPrintMessage('Shutting down ' + Title);
   DiagPrintMessage('Freeing the Voice object.');
   FreeAndNil(SpVoice);
@@ -122,7 +121,7 @@ begin
     CloseFile(OutputFile);
   end;
 
-  if (VTVLog <> Nil) and (VTVLog.Enabled) then
+  if VTVLog.Enabled then
   begin
     DiagPrintMessage('Closing the log file.');
     FreeAndNil(VTVLog);
@@ -140,24 +139,17 @@ end;
 { Run the application. }
 procedure TVTVApp.DoRun;
 begin
-  { Process the command line options that need to be handles first. }
+  { Process the command line options that need to be handled first. }
   OptionsProcess;
   if Terminated then Exit;
 
   { Load the configuration file. }
   if LoadConfig then
   begin
-    { Load the configuration file. }
     Settings := TVTVSettings.Create(SettingsFile);
     LoadSettings;
-  end
-  else
-  begin
-    { Fake some objects with no configuration. }
-    VTVLog := TVTVLog.Create(Nil);
-    AbbrevList := TStringList.create;
-    AliasList := TStringList.create;
   end;
+
   { Process the command line options that change settings. }
   OptionsProcessSettings;
   if Terminated then Exit;
@@ -211,6 +203,8 @@ end;
 procedure TVTVApp.Initialize;
 begin
   OptionsSetup;
+
+  { Default values. }
   Diagnostic := False;
   Interactive := False;
   LoadConfig := True;
@@ -220,6 +214,11 @@ begin
   SettingsFile := '';
   SpVoice := TSpVoice.Create;
   SpVoice.ExceptionsEnabled := True;
+
+  { Dummy objects. If settings are loaded these will be replaced. }
+  VTVLog := TVTVLog.Create(Nil);
+  AbbrevList := TStringList.create;
+  AliasList := TStringList.create;
 end;
 
 procedure TVTVApp.LoadSettings;
@@ -246,7 +245,7 @@ end;
 
 { ----------========== Command Line Options ==========----- }
 
-{ Process the command line options that need to be handles first. }
+{ Process the command line options that need to be handled first. }
 procedure TVTVApp.OptionsProcess;
 var
   Text : String;
@@ -260,12 +259,12 @@ begin
   begin
     WriteLn(Text);
     WriteLn;
-    Help;
+    Writeln('For help use the command: ', ExtractFileName(ExeName), ' -h');
     Terminate;
     Exit;
   end;
 
-  { Enable diagnostic mode. }
+  { Enable diagnostic mode. Check for this before anything. }
   if HasOption('D', 'diag') then
   begin
     Diagnostic := True;
@@ -441,15 +440,15 @@ procedure TVTVApp.DiagPrintMessage(Message : String);
 begin
   if Diagnostic then
     WriteLn('Diagnostic: ', Message);
-  if VTVLog <> Nil then
     VTVLog.LogDiag(Message);
 end;
 
-{ Setup the log file to write spoken text to. }
+{ Setup the log file. }
 procedure TVTVApp.LogSetup;
 begin
   DiagPrintMessage('Writing output to the log file: ' + Settings.LogFile);
   try
+    FreeAndNil(VTVLog);
     VTVLog := TVTVLog.Create(Settings);
   except
     on E: EVTVLogException do
