@@ -23,7 +23,7 @@ procedure CommandHelp(Arg : String);
 implementation
 
 const
-  HelpTextMain : Array[1..16] of String = (
+  HelpTextMain : Array[1..17] of String = (
     'Commands:',
     '/A | /abbrev [Abbrev]  Lias all Abbreviations, or a specific Abbreviation',
     '/a | /alias [Alias]    List all Aliases, or a specific alias.',
@@ -34,6 +34,7 @@ const
     '/p | /priority         Show or set the priority for speaking.',
     '/q | /quit             Exit the application.',
     '/r | /rate [Rate]      Show or set the rate text is spoken.',
+    '/R | /reload           Reload the settings from the configuration file.',
     '/s | /save             Save settings back to the configuration file.',
     '/v | /voice [Voice]    Show or set the voice used to speak text.',
     '/V | /voices           List the available voices with ID #. ',

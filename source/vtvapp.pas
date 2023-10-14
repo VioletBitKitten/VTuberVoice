@@ -83,6 +83,7 @@ type
     procedure HandleCommandOutput(NewOutput : String);
     procedure HandleCommandPriority(NewPriority : String);
     procedure HandleCommandRate(NewRate : String);
+    procedure HandleCommandReload;
     procedure HandleCommandSaveSettings;
     procedure HandleCommandVoice(NewVoice : String);
     procedure HandleCommandVolume(NewVolume : String);
@@ -121,16 +122,16 @@ begin
     CloseFile(OutputFile);
   end;
 
-  if VTVLog.Enabled then
-  begin
-    DiagPrintMessage('Closing the log file.');
-    FreeAndNil(VTVLog);
-  end;
-
   if OutputWaveWrite then
   begin
     DiagPrintMessage('Closing the output wave file.');
     SpFileStream.Close;
+  end;
+
+  if VTVLog.Enabled then
+  begin
+    DiagPrintMessage('Closing the log file.');
+    FreeAndNil(VTVLog);
   end;
 
   inherited;
@@ -145,10 +146,10 @@ begin
 
   { Load the configuration file. }
   if LoadConfig then
-  begin
-    Settings := TVTVSettings.Create(SettingsFile);
-    LoadSettings;
-  end;
+    LoadSettings
+  else
+    DiagPrintMessage('Loadings of settings file has been disabled.');
+  VTVLog.LogMessage('Startup of ' + Title);
 
   { Process the command line options that change settings. }
   OptionsProcessSettings;
@@ -223,6 +224,9 @@ end;
 
 procedure TVTVApp.LoadSettings;
 begin
+  if Settings <> Nil then
+    FreeAndNil(Settings);
+  Settings := TVTVSettings.Create(SettingsFile);
   DiagPrintMessage('Loading settings from the configuration file: ' + Settings.FileName);
 
   { SpVoice Settings. }
@@ -235,12 +239,20 @@ begin
   if Settings.Voice <> '' then
     SetVoice(Settings.Voice);
   SetVolume(IntToStr(Settings.Volume));
-  AliasList := Settings.Aliases;
+
+  { Abbreviations and aliases.}
   AbbrevList := Settings.Abbreviations;
+  AliasList := Settings.Aliases;
 
   { Log Settings. }
-  LogSetup;
-  VTVLog.LogMessage('Startup of ' + Title);
+  if Settings.LogEnabled then
+    LogSetup
+  else
+  begin
+  { In the case of reloading logging could be disabled. }
+    FreeAndNil(VTVLog);
+    VTVLog := TVTVLog.Create(Nil);
+  end;
 end;
 
 { ----------========== Command Line Options ==========----- }
@@ -763,8 +775,9 @@ begin
   { Do something with the command. }
   case Command of // Special cases for upper case characters.
     'A'             : HandleCommandAbbrev(Arg);
-    'V'             : ListVoices;
     'O'             : ListAudioOutputs;
+    'R'             : HandleCommandReload;
+    'V'             : ListVoices;
     else
       case (LowerCase(Command)) of
               'abbrev'  : HandleCommandAbbrev(Arg);
@@ -776,6 +789,7 @@ begin
         'p',  'priority': HandleCommandPriority(Arg);
         'q',  'quit'    : Terminate;
         'r',  'rate'    : HandleCommandRate(Arg);
+              'reload'  : HandleCommandReload;
         's',  'save'    : HandleCommandSaveSettings;
         'v',  'voice'   : HandleCommandVoice(Arg);
               'voices'  : ListVoices;
@@ -812,29 +826,26 @@ begin
       Continue
     else if Text = '\' then
     begin
-      OutputWriteText('');
-      Continue;
+      if OutputWrite then
+        OutputWriteText('');
     end
     else if Text = '?' then
     begin
       CommandHelp;
-      Continue;
     end
     else if Text[Length(Text)] = '\' then
-      Continue
     else if Text[1] = '#' then
     begin
       SpeakAlias(Text.Substring(1));
-      Continue;
     end
     else if Text[1] = '/' then
     begin
       HandleCommand(Text);
       if Terminated then
         Break;
-      Continue;
-    end;
-    SpeakText(Text);
+    end
+    else
+      SpeakText(Text);
   end;
 end;
 
@@ -921,11 +932,28 @@ begin
   end;
 end;
 
+procedure TVTVApp.HandleCommandReload;
+begin
+  if LoadConfig then
+  begin
+    WriteLn('Reloading settings...');
+    if Settings <> Nil then
+      LoadSettings;
+  end
+  else
+    WriteLn('Settings file disabled.');
+end;
+
 procedure TVTVApp.HandleCommandSaveSettings;
 begin
-  WriteLn('Saving settings...');
-  if Settings <> Nil then
-    Settings.SaveSettings;
+  if LoadConfig then
+  begin
+    WriteLn('Saving settings...');
+    if Settings <> Nil then
+      Settings.SaveSettings;
+  end
+  else
+    WriteLn('Settings file disabled.');
 end;
 
 procedure TVTVApp.HandleCommandVoice(NewVoice : String);

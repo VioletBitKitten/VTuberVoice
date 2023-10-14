@@ -14,9 +14,8 @@ This is a list of ideas and work to be completed. Tasks to be completed before t
   * Created tests for the `filelist` Class.
   * Created tests for the `vtvsettings` Class. This could use more work.
   * Created tests for the `vtvlog` Class.
-* Add a command to reload settings from the configuration file.
-  * Will require reworking how settings are used. Close files, reset the log.
-* Find a way to handle Control-C. This is proving difficult. As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
+* Find a way to handle Control-C. This is proving difficult.
+  As far as I can tell I would have to use the Crt and Keyboard Units, which pose other issues.
 * Expand the interactive user interface.
   * Add aliases for frequently spoken phrases. `In Progress.`
     * Simple alias support. Can make it better.
@@ -34,6 +33,7 @@ This is a list of ideas and work to be completed. Tasks to be completed before t
 
 ## Completed
 
+* Add a command to reload settings from the configuration file.
 * Implement customization.
   * INI Files for configuration implemented.
     * INI file can be in the local directory or in the users configuration directory.
